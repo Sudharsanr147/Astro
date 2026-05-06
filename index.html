@@ -487,7 +487,7 @@ tbody tr:hover td { background: #13132A; }
   <!-- ════ TAB 0: NOW LAGNA ════ -->
   <div class="page" id="page0">
     <div id="now-info" class="date-strip" style="justify-content:center;">
-      <span style="font-size:11px;color:var(--text-dim);">தற்போதைய நேரம்: </span>
+      <span style="font-size:11px;color:var(--text-dim);">தற்போதைய நேரம் (IST): </span>
       <span id="now-time-label" style="font-size:11px;color:var(--gold);font-weight:700;"></span>
     </div>
     <div class="section-title">இப்போதைய லக்னம் கட்டம்</div>
@@ -697,23 +697,40 @@ function getSubLord(degInStar) {
 }
 
 // ═══════════════════════════════════════════════════
-// SIMPLIFIED PLANETARY POSITION CALCULATOR
-// Uses simplified VSOP87 mean elements (demo accuracy ~1°)
+// JULIAN DAY — always pass a JS Date; reads UTC fields
+// JD is in UT (= UTC for our purposes)
 // ═══════════════════════════════════════════════════
 function julianDay(date) {
   const Y = date.getUTCFullYear();
   const M = date.getUTCMonth() + 1;
-  const D = date.getUTCDate() + (date.getUTCHours() + date.getUTCMinutes()/60 + date.getUTCSeconds()/3600) / 24;
+  // Fractional day in UT
+  const D = date.getUTCDate()
+          + date.getUTCHours()   / 24.0
+          + date.getUTCMinutes() / 1440.0
+          + date.getUTCSeconds() / 86400.0;
   let JD;
   if (M <= 2) {
     const Yp = Y - 1, Mp = M + 12;
-    const A = Math.floor(Yp / 100), B = 2 - A + Math.floor(A/4);
-    JD = Math.floor(365.25*(Yp+4716)) + Math.floor(30.6001*(Mp+1)) + D + B - 1524.5;
+    const A = Math.floor(Yp / 100), B = 2 - A + Math.floor(A / 4);
+    JD = Math.floor(365.25 * (Yp + 4716)) + Math.floor(30.6001 * (Mp + 1)) + D + B - 1524.5;
   } else {
-    const A = Math.floor(Y/100), B = 2 - A + Math.floor(A/4);
-    JD = Math.floor(365.25*(Y+4716)) + Math.floor(30.6001*(M+1)) + D + B - 1524.5;
+    const A = Math.floor(Y / 100), B = 2 - A + Math.floor(A / 4);
+    JD = Math.floor(365.25 * (Y + 4716)) + Math.floor(30.6001 * (M + 1)) + D + B - 1524.5;
   }
   return JD;
+}
+
+// Utility: build a UTC Date from IST input
+// IST = UTC + 5:30, so UTC = IST − 330 minutes
+function istToJD(istY, istM, istD, istHH, istMM) {
+  const totalISTmin = istHH * 60 + istMM;
+  const totalUTCmin = totalISTmin - 330;
+  // Resolve to calendar date + time
+  let utcMidnightMs = Date.UTC(istY, istM - 1, istD); // midnight of IST date
+  // Add UTC offset in ms
+  const utcMs = utcMidnightMs + totalUTCmin * 60000;
+  const d = new Date(utcMs);
+  return { jd: julianDay(d), date: d };
 }
 
 function mod360(x) { return ((x % 360) + 360) % 360; }
@@ -851,8 +868,7 @@ function getLagnaRasi(jd, lat = 13.0827, geoLon = 80.2707) {
 // ═══════════════════════════════════════════════════
 // BUILD CHART DATA
 // ═══════════════════════════════════════════════════
-function buildChartData(date, isNavamsa = false, lat = 13.0827, geoLon = 80.2707) {
-  const jd = julianDay(date);
+function buildChartData(jd, isNavamsa = false, lat = 13.0827, geoLon = 80.2707) {
   const lons = siderealLon(jd);
   const lagna = getLagnaRasi(jd, lat, geoLon);
 
@@ -879,7 +895,7 @@ function buildChartData(date, isNavamsa = false, lat = 13.0827, geoLon = 80.2707
 
   const lagnaRasiIdx = isNavamsa ? getNavamsa(lagna.rasi * 30 + lagna.deg) : lagna.rasi;
 
-  return { planets, lagnaRasi: lagnaRasiIdx, lagnaRawDeg: lagna.deg, jd };
+  return { planets, lagnaRasi: lagnaRasiIdx, lagnaRawDeg: lagna.deg, lagnaFullLon: lagna.sidAsc, jd };
 }
 
 // ═══════════════════════════════════════════════════
@@ -942,7 +958,10 @@ function renderSIChart(containerId, data) {
   // Centre cell (spans 2 cols × 2 rows)
   el.innerHTML += `<div class="cell centre">
     <div class="centre-label">ராசி</div>
-    <div class="centre-rasi">${RASI[data.lagnaRasi]}<br/>லக்னம்</div>
+    <div class="centre-rasi">${RASI[data.lagnaRasi]}<br/>லக்னம்<br/>
+    <span style="color:var(--degree);font-size:9px;">${data.lagnaRawDeg.toFixed(2)}°</span><br/>
+    <span style="color:#555;font-size:8px;">JD ${data.jd.toFixed(4)}</span>
+    </div>
   </div>`;
   el.innerHTML += makeCell(3);  // Kataka
 
@@ -1088,9 +1107,9 @@ function renderStarChart(containerId) {
 // ═══════════════════════════════════════════════════
 // MAIN INIT & REFRESH
 // ═══════════════════════════════════════════════════
-function renderAll(date, isNow, lat = 13.0827, geoLon = 80.2707) {
-  const lagnaData   = buildChartData(date, false, lat, geoLon);
-  const navamsaData = buildChartData(date, true,  lat, geoLon);
+function renderAll(jd, isNow, lat = 13.0827, geoLon = 80.2707) {
+  const lagnaData   = buildChartData(jd, false, lat, geoLon);
+  const navamsaData = buildChartData(jd, true,  lat, geoLon);
 
   if (isNow) {
     renderSIChart('chart-now-lagna',  lagnaData);
@@ -1135,37 +1154,33 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// ─── IST helpers ───────────────────────────────────
-// julianDay() reads UTC fields from the Date object.
-// So we always convert IST input → UTC before passing.
-// IST = UTC + 5h 30m  →  UTC = IST - 5h 30m = IST - 330 minutes
-
-function istToUtcDate(y, m, d, hh, mm) {
-  const istMinutes = hh * 60 + mm;
-  const utcMinutes = istMinutes - 330;
-  const utcDate = new Date(Date.UTC(y, m - 1, d));
-  utcDate.setUTCMinutes(utcDate.getUTCMinutes() + utcMinutes);
-  return utcDate;
-}
-
 function refreshNow() {
-  const now = new Date();
+  const now = new Date(); // device local time
+  // Extract IST components from local time
+  // (assumes device is set to IST, which is standard for Indian users)
+  const istY  = now.getFullYear();
+  const istM  = now.getMonth() + 1;
+  const istD  = now.getDate();
+  const istHH = now.getHours();
+  const istMM = now.getMinutes();
+
+  const pad = n => String(n).padStart(2,'0');
   document.getElementById('now-time-label').textContent =
-    now.toLocaleDateString('ta-IN') + ' ' +
-    now.toLocaleTimeString('ta-IN', {hour:'2-digit', minute:'2-digit'});
-  // new Date() already carries true UTC internally — julianDay uses getUTC* so it's correct
-  renderAll(now, true);
+    `${istD}/${istM}/${istY} ${pad(istHH)}:${pad(istMM)} IST`;
+
+  const { jd } = istToJD(istY, istM, istD, istHH, istMM);
+  renderAll(jd, true);
 }
 
 function calcDateChart() {
   const dateVal = document.getElementById('sel-date').value;
   const timeVal = document.getElementById('sel-time').value;
   if (!dateVal) return;
-  const [y, m, d] = dateVal.split('-').map(Number);
-  const [hh, mm]  = timeVal ? timeVal.split(':').map(Number) : [0, 0];
-  const date = istToUtcDate(y, m, d, hh, mm);
+  const [istY, istM, istD] = dateVal.split('-').map(Number);
+  const [istHH, istMM] = timeVal ? timeVal.split(':').map(Number) : [0, 0];
+  const { jd } = istToJD(istY, istM, istD, istHH, istMM);
   const { lat, lon } = getSelectedLatLon();
-  renderAll(date, false, lat, lon);
+  renderAll(jd, false, lat, lon);
 }
 
 // TAB SWITCHING
