@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ஜோதிஷம் - கிரக நிலைகள்</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #F0B429;
+    --gold-dim: #A07820;
+    --bg: #0A0A0F;
+    --cell-bg: #0E0E16;
+    --cell-border: #F0B42966;
+    --text: #F5ECD7;
+    --planet-color: #FFE066;
+    --degree-color: #A8C5FF;
+    --retro-color: #FF7A7A;
+    --exalt-color: #7AFF9E;
+    --debi-color: #FF9F7A;
+    --lagna-color: #00CFFF;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans Tamil', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Header */
+  .header {
+    width: 100%;
+    padding: 16px 20px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(180deg, #12121C 0%, transparent 100%);
+    border-bottom: 1px solid var(--cell-border);
+  }
+  .header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-shadow: 0 0 20px #F0B42966;
+  }
+  .header .subtitle {
+    font-size: 12px;
+    color: #888;
+    margin-top: 3px;
+    letter-spacing: 1px;
+  }
+
+  /* Tab bar */
+  .tabs {
+    display: flex;
+    width: 100%;
+    border-bottom: 1px solid var(--cell-border);
+    background: #0E0E16;
+  }
+  .tab {
+    flex: 1;
+    padding: 10px 4px;
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+    transition: color 0.2s;
+    border-bottom: 2px solid transparent;
+  }
+  .tab.active {
+    color: var(--gold);
+    border-bottom: 2px solid var(--gold);
+  }
+
+  /* Birth info strip */
+  .birth-info {
+    width: 100%;
+    padding: 10px 16px;
+    background: #0C0C14;
+    font-size: 11px;
+    color: #999;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    border-bottom: 1px solid #1A1A2A;
+  }
+  .birth-info span { color: var(--gold); font-weight: 600; }
+
+  /* Chart wrapper */
+  .chart-wrapper {
+    padding: 16px;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  /* South Indian chart grid — 4×4 with corners hidden */
+  .si-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 2px;
+    width: 100%;
+    aspect-ratio: 1;
+    border: 2px solid var(--gold);
+    background: var(--gold);
+    box-shadow: 0 0 30px #F0B42933, inset 0 0 30px #00000066;
+  }
+
+  .cell {
+    background: var(--cell-bg);
+    position: relative;
+    padding: 6px 5px 4px;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    overflow: hidden;
+  }
+
+  /* Corner cells are hidden (merged with center) */
+  .cell.hidden {
+    background: var(--bg);
+    pointer-events: none;
+  }
+
+  /* Center 4 cells form the info area */
+  .cell.center {
+    background: #0C0C18;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 4px;
+  }
+
+  /* Rasi label (small, top-right) */
+  .rasi-label {
+    position: absolute;
+    top: 3px;
+    right: 4px;
+    font-size: 8px;
+    color: #444;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  /* Lagna marker */
+  .lagna-marker {
+    position: absolute;
+    top: 0; left: 0;
+    border-top: 14px solid var(--lagna-color);
+    border-right: 14px solid transparent;
+  }
+
+  /* Planet entry */
+  .planet-entry {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    line-height: 1.1;
+  }
+  .planet-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--planet-color);
+  }
+  .planet-name.retro { color: var(--retro-color); }
+  .planet-name.exalt { color: var(--exalt-color); }
+  .planet-name.debi  { color: var(--debi-color); }
+  .planet-name.lagna-p { color: var(--lagna-color); }
+  .planet-deg {
+    font-size: 9px;
+    color: var(--degree-color);
+    margin-left: 1px;
+  }
+
+  /* Center info */
+  .center-title {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 1px;
+    text-align: center;
+  }
+  .center-name {
+    font-size: 13px;
+    color: var(--text);
+    text-align: center;
+    margin-top: 2px;
+    font-weight: 600;
+  }
+  .center-date {
+    font-size: 9px;
+    color: #666;
+    text-align: center;
+    margin-top: 3px;
+  }
+
+  /* Legend */
+  .legend {
+    width: 100%;
+    max-width: 420px;
+    padding: 0 16px 8px;
+  }
+  .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    color: #777;
+    padding: 3px 0;
+    border-bottom: 1px solid #1A1A22;
+  }
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Planet table */
+  .planet-table {
+    width: 100%;
+    max-width: 420px;
+    padding: 0 16px 16px;
+  }
+  .pt-header {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gold);
+    padding: 8px 0 6px;
+    border-bottom: 1px solid var(--cell-border);
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  th {
+    color: #666;
+    font-weight: 600;
+    text-align: left;
+    padding: 4px 6px;
+    font-size: 10px;
+    border-bottom: 1px solid #1A1A22;
+  }
+  td {
+    padding: 5px 6px;
+    border-bottom: 1px solid #111118;
+    color: var(--text);
+  }
+  tr:hover td { background: #12121E; }
+  td.p-name { color: var(--planet-color); font-weight: 700; }
+  td.retro { color: var(--retro-color); }
+  td.exalt { color: var(--exalt-color); }
+  td.debi  { color: var(--debi-color);  }
+
+  /* Glow anim on load */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .chart-wrapper, .planet-table { animation: fadeUp 0.5s ease both; }
+  .planet-table { animation-delay: 0.15s; }
+
+  /* Bottom nav */
+  .bottom-nav {
+    width: 100%;
+    display: flex;
+    border-top: 1px solid var(--cell-border);
+    background: #0C0C14;
+    position: sticky;
+    bottom: 0;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0 8px;
+    font-size: 10px;
+    color: #555;
+    cursor: pointer;
+    gap: 3px;
+  }
+  .nav-item.active { color: var(--gold); }
+  .nav-icon { font-size: 20px; }
+
+  .spacer { flex: 1; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>☽ JYOTHISHAM ☽</h1>
+  <div class="subtitle">தென்னிந்திய ஜாதக கட்டம்</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active">அடிப்படை</div>
+  <div class="tab">லக்னம்</div>
+  <div class="tab">நவாம்சம்</div>
+  <div class="tab">க்லேஷம்</div>
+</div>
+
+<div class="birth-info">
+  பெயர்: <span>சுதர்சன்</span> &nbsp;|&nbsp;
+  தேதி: <span>15 மார்ச் 1978</span> &nbsp;|&nbsp;
+  நேரம்: <span>06:42 AM</span> &nbsp;|&nbsp;
+  இடம்: <span>சென்னை</span>
+</div>
+
+<div class="chart-wrapper">
+  <!--
+    South Indian Fixed Rasi grid (4×4):
+    Row0: [12-Meena] [1-Mesha]  [2-Rishabha] [3-Mithuna]
+    Row1: [11-Kumbha] [CENTER]  [CENTER]     [4-Kataka]
+    Row2: [10-Makara] [CENTER]  [CENTER]     [5-Simha]
+    Row3: [9-Dhanu]  [8-Vrisch] [7-Tula]    [6-Kanya]
+  -->
+  <div class="si-grid">
+
+    <!-- Row 0 -->
+    <!-- R12: Meena (மீனம்) -->
+    <div class="cell" id="r12">
+      <div class="rasi-label">மீ</div>
+    </div>
+    <!-- R1: Mesha (மேஷம்) — Lagna here -->
+    <div class="cell" id="r1">
+      <div class="lagna-marker"></div>
+      <div class="rasi-label">மே</div>
+      <div class="planet-entry">
+        <span class="planet-name lagna-p">ல</span>
+      </div>
+      <div class="planet-entry">
+        <span class="planet-name exalt">சூ</span><span class="planet-deg">19°</span>
+      </div>
+    </div>
+    <!-- R2: Rishabha (ரிஷபம்) -->
+    <div class="cell" id="r2">
+      <div class="rasi-label">ரி</div>
+    </div>
+    <!-- R3: Mithuna (மிதுனம்) -->
+    <div class="cell" id="r3">
+      <div class="rasi-label">மி</div>
+      <div class="planet-entry">
+        <span class="planet-name">பு</span><span class="planet-deg">06°</span>
+      </div>
+      <div class="planet-entry">
+        <span class="planet-name">சு</span><span class="planet-deg">10°</span>
+      </div>
+    </div>
+
+    <!-- Row 1 -->
+    <!-- R11: Kumbha (கும்பம்) -->
+    <div class="cell" id="r11">
+      <div class="rasi-label">கும்</div>
+      <div class="planet-entry">
+        <span class="planet-name retro">ரா</span><span class="planet-deg">11°</span>
+      </div>
+    </div>
+    <!-- CENTER top-left -->
+    <div class="cell center" colspan="2">
+      <div class="center-title">RASI</div>
+      <div class="center-name">சுதர்சன்</div>
+      <div class="center-date">15.03.1978<br/>06:42 AM<br/>சென்னை</div>
+    </div>
+    <!-- CENTER top-right (merged visually) -->
+    <div class="cell center" style="border-left:none;">
+    </div>
+    <!-- R4: Kataka (கடகம்) -->
+    <div class="cell" id="r4">
+      <div class="rasi-label">கட</div>
+    </div>
+
+    <!-- Row 2 -->
+    <!-- R10: Makara (மகரம்) -->
+    <div class="cell" id="r10">
+      <div class="rasi-label">மக</div>
+      <div class="planet-entry">
+        <span class="planet-name">ப்ளூ</span><span class="planet-deg">11°</span>
+      </div>
+    </div>
+    <!-- CENTER bottom-left -->
+    <div class="cell center" style="border-top:none;"></div>
+    <!-- CENTER bottom-right -->
+    <div class="cell center" style="border-top:none;border-left:none;">
+      <div class="planet-entry" style="margin-top:4px;">
+        <span class="planet-name retro" style="font-size:11px;">ல</span><span class="planet-deg">24°</span>
+      </div>
+      <div class="planet-entry">
+        <span class="planet-name retro" style="font-size:11px;">கே*</span><span class="planet-deg">11°</span>
+      </div>
+    </div>
+    <!-- R5: Simha (சிம்மம்) -->
+    <div class="cell" id="r5">
+      <div class="rasi-label">சிம்</div>
+    </div>
+
+    <!-- Row 3 -->
+    <!-- R9: Dhanu (தனுசு) -->
+    <div class="cell" id="r9">
+      <div class="rasi-label">தனு</div>
+      <div class="planet-entry">
+        <span class="planet-name">சந்</span><span class="planet-deg">00°</span>
+      </div>
+    </div>
+    <!-- R8: Vrishchika (விருச்சிகம்) -->
+    <div class="cell" id="r8">
+      <div class="rasi-label">விரு</div>
+    </div>
+    <!-- R7: Tula (துலாம்) -->
+    <div class="cell" id="r7">
+      <div class="rasi-label">துலா</div>
+    </div>
+    <!-- R6: Kanya (கன்னி) -->
+    <div class="cell" id="r6">
+      <div class="rasi-label">கன்</div>
+      <div class="planet-entry">
+        <span class="planet-name debi">செ</span><span class="planet-deg">15°</span>
+      </div>
+      <div class="planet-entry">
+        <span class="planet-name">நெ</span><span class="planet-deg">09°</span>
+      </div>
+      <div class="planet-entry">
+        <span class="planet-name exalt">சூ^</span><span class="planet-deg">25°</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-row"><div class="legend-dot" style="background:#7AFF9E"></div> உச்சம் (Exaltation) — ^ குறி</div>
+  <div class="legend-row"><div class="legend-dot" style="background:#FF9F7A"></div> நீசம் (Debilitation) — v குறி</div>
+  <div class="legend-row"><div class="legend-dot" style="background:#FF7A7A"></div> வக்ரம் / பிற்போக்கு (Retrograde) — * குறி</div>
+  <div class="legend-row"><div class="legend-dot" style="background:#00CFFF"></div> லக்னம் (Ascendant) — ▲ மூலை</div>
+</div>
+
+<!-- Planet table -->
+<div class="planet-table">
+  <div class="pt-header">கிரக விவரங்கள்</div>
+  <table>
+    <thead>
+      <tr>
+        <th>கிரகம்</th>
+        <th>ராசி</th>
+        <th>பாதம்</th>
+        <th>நிலை</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="p-name">சூரியன்</td><td>மேஷம்</td><td>19°24′</td><td class="exalt">உச்சம்</td></tr>
+      <tr><td class="p-name">சந்திரன்</td><td>தனுசு</td><td>00°15′</td><td>சாதாரண</td></tr>
+      <tr><td class="p-name">செவ்வாய்</td><td>கன்னி</td><td>15°08′</td><td class="debi">நீசம்</td></tr>
+      <tr><td class="p-name">புதன்</td><td>மிதுனம்</td><td>06°33′</td><td class="exalt">உச்சம்</td></tr>
+      <tr><td class="p-name">குரு</td><td>மேஷம்</td><td>25°40′</td><td>சாதாரண</td></tr>
+      <tr><td class="p-name">சுக்ரன்</td><td>மிதுனம்</td><td>10°17′</td><td>சாதாரண</td></tr>
+      <tr><td class="p-name">சனி</td><td>கன்னி</td><td>09°52′</td><td>சாதாரண</td></tr>
+      <tr><td class="p-name retro">ராகு</td><td>கும்பம்</td><td>11°00′</td><td class="retro">வக்ரம்</td></tr>
+      <tr><td class="p-name retro">கேது</td><td>சிம்மம் (ல)</td><td>11°00′</td><td class="retro">வக்ரம்</td></tr>
+      <tr><td class="p-name">நெப்யூன்</td><td>கன்னி</td><td>09°10′</td><td>சாதாரண</td></tr>
+      <tr><td class="p-name">யுரேனஸ்</td><td>மிதுனம்</td><td>—</td><td>சாதாரண</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="spacer"></div>
+
+<!-- Bottom nav -->
+<div class="bottom-nav">
+  <div class="nav-item active">
+    <div class="nav-icon">🏠</div>
+    <div>முகப்பு</div>
+  </div>
+  <div class="nav-item">
+    <div class="nav-icon">✦</div>
+    <div>ஏஜ் ஆஸ்ட்ரோ</div>
+  </div>
+  <div class="nav-item">
+    <div class="nav-icon">▶</div>
+    <div>நேரலை</div>
+  </div>
+  <div class="nav-item">
+    <div class="nav-icon">💬</div>
+    <div>கேளு</div>
+  </div>
+  <div class="nav-item">
+    <div class="nav-icon">📋</div>
+    <div>ஹிஸ்டரி</div>
+  </div>
+</div>
+
+</body>
+</html>
