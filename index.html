@@ -373,44 +373,74 @@ tbody tr:hover td { background: #13132A; }
 .scroll-area::-webkit-scrollbar { width: 4px; }
 .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-/* ── PWA INSTALL BANNER ── */
-#install-banner {
+/* ── INSTALL MODAL ── */
+#install-modal {
   display: none;
-  position: fixed;
-  bottom: 70px;
-  left: 50%; transform: translateX(-50%);
-  width: calc(100% - 24px);
-  max-width: 456px;
-  background: linear-gradient(135deg, #1A1A2E, #16213E);
+  position: fixed; inset: 0;
+  background: #000000BB;
+  z-index: 500;
+  align-items: flex-end;
+  justify-content: center;
+}
+#install-modal.show { display: flex; }
+.im-sheet {
+  background: linear-gradient(160deg, #141428, #0E0E1E);
   border: 1px solid var(--border-gold);
-  border-radius: 12px;
-  padding: 12px 14px;
-  z-index: 200;
-  box-shadow: 0 8px 32px #000000AA;
-  animation: slideUp 0.3s ease;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 18px 36px;
+  width: 100%; max-width: 480px;
+  animation: sheetUp 0.35s cubic-bezier(0.4,0,0.2,1);
 }
-@keyframes slideUp {
-  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
 }
-#install-banner.show { display: flex; align-items: center; gap: 12px; }
-.ib-icon { font-size: 28px; flex-shrink: 0; }
-.ib-text { flex: 1; }
-.ib-title { font-size: 13px; font-weight: 700; color: var(--gold-light); }
-.ib-sub   { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-.ib-btns  { display: flex; gap: 6px; flex-shrink: 0; }
-.ib-install {
+.im-handle {
+  width: 40px; height: 4px;
+  background: var(--border); border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.im-title {
+  font-size: 16px; font-weight: 700;
+  color: var(--gold-light); text-align: center; margin-bottom: 4px;
+}
+.im-sub {
+  font-size: 11px; color: var(--text-dim);
+  text-align: center; margin-bottom: 18px;
+}
+.im-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.im-step {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: #0C0C1C; border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px;
+}
+.im-step-num {
+  width: 26px; height: 26px; border-radius: 50%;
   background: var(--gold); color: #000;
-  border: none; border-radius: 7px;
-  padding: 6px 12px; font-size: 11px; font-weight: 700;
-  cursor: pointer;
+  font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
 }
-.ib-dismiss {
-  background: transparent; color: var(--text-dim);
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  padding: 6px 8px; font-size: 11px;
-  cursor: pointer;
+.im-step-text { font-size: 12px; color: var(--text); line-height: 1.6; }
+.im-step-text b { color: var(--gold-light); }
+.im-native-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--gold), #F5C842);
+  color: #000; border: none; border-radius: 12px;
+  padding: 15px; font-size: 15px; font-weight: 800;
+  cursor: pointer; margin-bottom: 10px;
+  display: none;
+}
+.im-native-btn.show { display: block; }
+.im-close-btn {
+  width: 100%; background: transparent; color: var(--text-dim);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 11px; font-size: 13px; cursor: pointer;
+}
+.install-icon-btn {
+  background: var(--gold); color: #000; border: none;
+  border-radius: 8px; padding: 5px 10px;
+  font-size: 11px; font-weight: 700; cursor: pointer;
 }
 
 /* ── OFFLINE TOAST ── */
@@ -420,7 +450,7 @@ tbody tr:hover td { background: #13132A; }
   background: #FF4444DD; color: #fff;
   padding: 6px 16px; border-radius: 20px;
   font-size: 11px; font-weight: 600;
-  z-index: 300;
+  z-index: 300; white-space: nowrap;
 }
 #offline-toast.show { display: block; }
 
@@ -438,6 +468,7 @@ tbody tr:hover td { background: #13132A; }
   </div>
   <div class="hdr-right">
     <div class="now-badge" onclick="refreshNow()">இப்போது ↺</div>
+    <button class="install-icon-btn" onclick="showInstallModal()">⬇ நிறுவு</button>
   </div>
 </div>
 
@@ -535,16 +566,22 @@ tbody tr:hover td { background: #13132A; }
 </div><!-- end pages-track -->
 </div><!-- end scroll-area -->
 
-<!-- PWA INSTALL BANNER -->
-<div id="install-banner">
-  <div class="ib-icon">🔮</div>
-  <div class="ib-text">
-    <div class="ib-title">ஆப்பை நிறுவுங்கள்!</div>
-    <div class="ib-sub">முகப்புத் திரையில் சேர்க்கவும் — இணையம் இல்லாமலும் பயன்படுத்தலாம்</div>
-  </div>
-  <div class="ib-btns">
-    <button class="ib-install" id="ib-install-btn">நிறுவு</button>
-    <button class="ib-dismiss" id="ib-dismiss-btn">✕</button>
+<!-- INSTALL MODAL -->
+<div id="install-modal" onclick="closeInstallModal(event)">
+  <div class="im-sheet">
+    <div class="im-handle"></div>
+    <div class="im-title">🔮 ஜோதிஷம் — நிறுவுக</div>
+    <div class="im-sub" id="im-sub-text">உங்கள் மொபைலில் ஆப்பாக நிறுவலாம்</div>
+
+    <!-- Native Chrome install button (Android) — shown only when prompt available -->
+    <button class="im-native-btn" id="im-native-btn" onclick="triggerNativeInstall()">
+      ⬇ இப்போதே நிறுவு (Android Chrome)
+    </button>
+
+    <!-- Manual steps — shown always as fallback -->
+    <div class="im-steps" id="im-steps"></div>
+
+    <button class="im-close-btn" onclick="closeInstallModal()">மூடு</button>
   </div>
 </div>
 
@@ -1098,6 +1135,145 @@ function showTab(idx) {
   }, {passive: true});
 })();
 
+// ══════════════════════════════════════════
+// PWA INSTALL MODAL — smart, always works
+// ══════════════════════════════════════════
+let deferredPrompt = null;
+
+// Detect platform
+function getPlatform() {
+  const ua = navigator.userAgent;
+  if (/iPhone|iPad|iPod/.test(ua)) return 'ios';
+  if (/Android/.test(ua)) return 'android';
+  return 'desktop';
+}
+
+function isInStandaloneMode() {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+}
+
+// Build the right steps based on platform
+function buildInstallSteps() {
+  const platform = getPlatform();
+  const stepsEl = document.getElementById('im-steps');
+  const subEl   = document.getElementById('im-sub-text');
+
+  if (platform === 'android') {
+    subEl.textContent = 'Chrome மூலம் முகப்புத் திரையில் சேர்க்கவும்';
+    stepsEl.innerHTML = `
+      <div class="im-step">
+        <div class="im-step-num">1</div>
+        <div class="im-step-text">Chrome-ல் இந்த பக்கத்தை திறக்கவும்<br>
+        <b>anr147.github.io/jyothisham</b></div>
+      </div>
+      <div class="im-step">
+        <div class="im-step-num">2</div>
+        <div class="im-step-text">மேலே உள்ள <b>⋮ மூன்று புள்ளிகள்</b> மெனுவை தொடவும்</div>
+      </div>
+      <div class="im-step">
+        <div class="im-step-num">3</div>
+        <div class="im-step-text"><b>"Add to Home screen"</b> அல்லது <b>"முகப்புத் திரையில் சேர்"</b> என்பதை தொடவும்</div>
+      </div>
+      <div class="im-step">
+        <div class="im-step-num">4</div>
+        <div class="im-step-text"><b>"Add"</b> என்று உறுதிப்படுத்தவும் — ஐகான் முகப்பில் தோன்றும்!</div>
+      </div>`;
+  } else if (platform === 'ios') {
+    subEl.textContent = 'Safari மூலம் முகப்புத் திரையில் சேர்க்கவும்';
+    stepsEl.innerHTML = `
+      <div class="im-step">
+        <div class="im-step-num">1</div>
+        <div class="im-step-text"><b>Safari</b> browser-ல் திறக்கவும் (Chrome-ல் iOS-ல் முடியாது)</div>
+      </div>
+      <div class="im-step">
+        <div class="im-step-num">2</div>
+        <div class="im-step-text">கீழே உள்ள <b>📤 Share பொத்தானை</b> தொடவும்</div>
+      </div>
+      <div class="im-step">
+        <div class="im-step-num">3</div>
+        <div class="im-step-text"><b>"Add to Home Screen"</b> என்பதை தேர்ந்தெடுக்கவும்</div>
+      </div>
+      <div class="im-step">
+        <div class="im-step-num">4</div>
+        <div class="im-step-text">மேல் வலதில் <b>"Add"</b> தொடவும் — முகப்பில் ஐகான் வரும்!</div>
+      </div>`;
+  } else {
+    subEl.textContent = 'Desktop Chrome / Edge-ல் நிறுவலாம்';
+    stepsEl.innerHTML = `
+      <div class="im-step">
+        <div class="im-step-num">1</div>
+        <div class="im-step-text">Address bar-ல் வலதில் உள்ள <b>⊕ install icon</b> கிளிக் செய்யவும்</div>
+      </div>
+      <div class="im-step">
+        <div class="im-step-num">2</div>
+        <div class="im-step-text"><b>"Install"</b> என்று கிளிக் செய்யவும்</div>
+      </div>`;
+  }
+}
+
+function showInstallModal() {
+  if (isInStandaloneMode()) {
+    alert('நீங்கள் ஏற்கனவே ஆப்பாக பயன்படுத்துகிறீர்கள்! ✅');
+    return;
+  }
+  buildInstallSteps();
+  // Show native button if Chrome prompt is available
+  if (deferredPrompt) {
+    document.getElementById('im-native-btn').classList.add('show');
+  }
+  document.getElementById('install-modal').classList.add('show');
+}
+
+function closeInstallModal(e) {
+  // Close on backdrop click or button click
+  if (!e || e.target === document.getElementById('install-modal') || !e.target) {
+    document.getElementById('install-modal').classList.remove('show');
+  }
+}
+
+async function triggerNativeInstall() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('im-native-btn').classList.remove('show');
+  if (outcome === 'accepted') closeInstallModal();
+}
+
+// Catch Chrome's install prompt
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Auto-show install modal after 5s if not in standalone mode
+  if (!isInStandaloneMode()) {
+    setTimeout(() => {
+      if (!localStorage.getItem('install_shown')) {
+        showInstallModal();
+        localStorage.setItem('install_shown', '1');
+      }
+    }, 5000);
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  closeInstallModal();
+});
+
+// ── SERVICE WORKER ──
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+    .then(reg => console.log('SW ready:', reg.scope))
+    .catch(() => {});
+}
+
+// ── OFFLINE DETECTION ──
+const offlineToast = document.getElementById('offline-toast');
+window.addEventListener('offline', () => offlineToast.classList.add('show'));
+window.addEventListener('online',  () => offlineToast.classList.remove('show'));
+if (!navigator.onLine) offlineToast.classList.add('show');
+
 // BOOT
 window.addEventListener('load', () => {
   refreshNow();
@@ -1105,55 +1281,6 @@ window.addEventListener('load', () => {
   showTab(0);
 });
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .then(reg => console.log('SW registered:', reg.scope))
-      .catch(err => console.log('SW failed:', err));
-  });
-}
-
-// ── PWA: INSTALL PROMPT ──
-let deferredPrompt = null;
-const banner = document.getElementById('install-banner');
-const installBtn = document.getElementById('ib-install-btn');
-const dismissBtn = document.getElementById('ib-dismiss-btn');
-
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  // Show banner after 3 seconds
-  setTimeout(() => banner.classList.add('show'), 3000);
-});
-
-installBtn.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  banner.classList.remove('show');
-});
-
-dismissBtn.addEventListener('click', () => {
-  banner.classList.remove('show');
-  // Don't show again for 7 days
-  localStorage.setItem('pwa_dismissed', Date.now());
-});
-
-// Don't show if recently dismissed
-window.addEventListener('load', () => {
-  const dismissed = localStorage.getItem('pwa_dismissed');
-  if (dismissed && Date.now() - parseInt(dismissed) < 7 * 24 * 60 * 60 * 1000) {
-    // suppress
-    window.addEventListener('beforeinstallprompt', e => e.preventDefault(), {once: true});
-  }
-});
-
-// ── OFFLINE / ONLINE DETECTION ──
-const offlineToast = document.getElementById('offline-toast');
-window.addEventListener('offline', () => offlineToast.classList.add('show'));
-window.addEventListener('online',  () => offlineToast.classList.remove('show'));
-if (!navigator.onLine) offlineToast.classList.add('show');
 </script>
 </body>
 </html>
