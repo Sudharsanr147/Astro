@@ -498,9 +498,54 @@ tbody tr:hover td { background: #13132A; }
   font-weight: 800; cursor: pointer;
 }
 
+/* House number — bottom-left of cell */
+.house-num {
+  position: absolute;
+  bottom: 2px; left: 3px;
+  font-size: 8px; color: #3A3A5A;
+  font-weight: 800; line-height: 1;
+}
+/* Aspect SVG — fills entire centre cell */
+.aspect-svg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; overflow: visible;
+}
+/* Aspect legend */
+.asp-legend {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  font-size: 10px; color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.asp-leg-item { display: flex; align-items: center; gap: 4px; }
+.asp-line { width: 20px; height: 2px; border-radius: 1px; }
+
+/* ── COLLAPSIBLE DATE STRIP ── */
+.date-toggle-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #1A1A2E, #14142A);
+  border: 1px solid var(--border-gold);
+  border-radius: 8px;
+  padding: 11px 14px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; margin-bottom: 6px;
+  color: var(--gold); font-size: 13px; font-weight: 700;
+  font-family: 'Noto Sans Tamil', sans-serif;
+}
+.date-toggle-btn .dtb-arrow {
+  margin-left: auto; font-size: 16px;
+  transition: transform 0.25s;
+}
+.date-toggle-btn.open .dtb-arrow { transform: rotate(180deg); }
+.date-toggle-body {
+  display: none;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-top: none; border-radius: 0 0 8px 8px;
+  padding: 10px; margin-top: -6px; margin-bottom: 8px;
+}
+.date-toggle-body.open { display: block; }
+
 </style>
-</head>
-<body>
 
 <!-- HEADER -->
 <div class="hdr">
@@ -581,6 +626,12 @@ tbody tr:hover td { background: #13132A; }
       </div>
     </div>
 
+    <button class="date-toggle-btn" id="date-toggle-btn" onclick="toggleDatePanel()">
+      <span>📅</span>
+      <span id="date-toggle-label">தேதி தேர்வு செய்க</span>
+      <span class="dtb-arrow">▼</span>
+    </button>
+    <div class="date-toggle-body" id="date-toggle-body">
     <div class="date-strip">
       <label>தேதி:</label>
       <input type="date" id="sel-date" value="1978-03-15">
@@ -589,7 +640,6 @@ tbody tr:hover td { background: #13132A; }
       <label>இடம்:</label>
       <select id="sel-place" style="flex:1;min-width:120px;">
         <option value="13.0827,80.2707">சென்னை</option>
-        <option value="13.0827,80.2707">Chennai</option>
         <option value="12.9716,77.5946">Bengaluru</option>
         <option value="19.0760,72.8777">Mumbai</option>
         <option value="28.6139,77.2090">Delhi</option>
@@ -601,13 +651,19 @@ tbody tr:hover td { background: #13132A; }
         <option value="8.7139,77.7567">Nagercoil</option>
         <option value="custom">தனிப்பயன்...</option>
       </select>
-      <div id="custom-loc" style="display:none;width:100%;display:flex;gap:6px;flex-wrap:wrap;">
+      <div id="custom-loc" style="display:none;width:100%;gap:6px;flex-wrap:wrap;">
         <input type="number" id="sel-lat" placeholder="Lat (e.g. 13.08)" step="0.001" style="flex:1;min-width:100px;">
         <input type="number" id="sel-lon" placeholder="Lon (e.g. 80.27)" step="0.001" style="flex:1;min-width:100px;">
       </div>
       <button class="calc-btn" onclick="calcDateChart()">கணக்கிடு</button>
     </div>
+    </div>
     <div class="section-title">தேர்ந்த நேர லக்னம் கட்டம்</div>
+    <div class="asp-legend">
+      <div class="asp-leg-item"><div class="asp-line" style="background:#44FF88"></div>குரு (5,7,9)</div>
+      <div class="asp-leg-item"><div class="asp-line" style="background:#FF8C00;border-top:2px dashed #FF8C00;height:0"></div>சனி (3,7,10)</div>
+      <div class="asp-leg-item"><div class="asp-line" style="background:#FF4444;border-top:2px dotted #FF4444;height:0"></div>செவ்வாய் (4,7,8)</div>
+    </div>
     <div class="si-chart" id="chart-sel-lagna"></div>
     <div class="legend">
       <div class="leg-item"><div class="leg-dot" style="background:var(--exalt)"></div> உச்சம்</div>
@@ -922,19 +978,17 @@ function getStatus(planet, rasiIdx, deg) {
 
 // Retrograde: planets are retrograde at certain times (simplified check)
 // For demo: mark as retrograde based on approximate synodic cycles
+// Retrograde detection: compute geocentric longitude 1 day before and after
+// Negative daily motion = retrograde. Sun and Moon never retrograde.
+// Rahu/Ketu always retrograde (mean node moves backward always).
 function isRetrograde(planet, jd) {
-  // Simplified: compute velocity sign change (very rough)
-  const T = (jd - 2451545.0) / 36525.0;
-  // rough annual synodic positions
-  const retro = {
-    'செவ்வாய்': Math.sin((T * 0.5320) * 2 * Math.PI) < -0.6,
-    'புதன்':    Math.sin((T * 4.152)  * 2 * Math.PI) < -0.3,
-    'குரு':     Math.sin((T * 0.0834) * 2 * Math.PI) < -0.9,
-    'சுக்கிரன்':Math.sin((T * 1.5988) * 2 * Math.PI) < -0.95,
-    'சனி':      Math.sin((T * 0.0338) * 2 * Math.PI) < -0.92,
-    'ராகு': true, 'கேது': true
-  };
-  return retro[planet] || false;
+  if (['சூரியன்','சந்திரன்'].includes(planet)) return false;
+  if (['ராகு','கேது'].includes(planet)) return true;
+  const lonBefore = siderealLon(jd - 1)[planet];
+  const lonAfter  = siderealLon(jd + 1)[planet];
+  // Angular difference handling 360 wrap
+  const diff = ((lonAfter - lonBefore + 180 + 360) % 360) - 180;
+  return diff < 0;
 }
 
 // Natchatra from longitude
@@ -1071,71 +1125,145 @@ function renderSIChart(containerId, data) {
   const el = document.getElementById(containerId);
   el.innerHTML = '';
 
-  // Build a map: rasiIdx → [planets]
+  // SI grid: fixed rasi positions
+  // Row0: 11,0,1,2 | Row1: 10,[C],3 | Row2: 9,[C],4 | Row3: 8,7,6,5
+  const GRID_RASI = [11,0,1,2, 10,'C',3, 9,4, 8,7,6,5];
+
+  // House numbers: house 1 = lagna rasi, clockwise
+  // SI clockwise order from Meena(11): 11→0→1→2→3→4→5→6→7→8→9→10→11
+  const CW_ORDER = [11,0,1,2,3,4,5,6,7,8,9,10]; // clockwise rasi sequence
+  function houseNum(rasiIdx) {
+    const lagnaPos = CW_ORDER.indexOf(data.lagnaRasi);
+    const rasiPos  = CW_ORDER.indexOf(rasiIdx);
+    return ((rasiPos - lagnaPos + 12) % 12) + 1;
+  }
+
+  // Build map rasiIdx → planets
   const rasiMap = {};
   for (let i = 0; i < 12; i++) rasiMap[i] = [];
   for (const p of data.planets) rasiMap[p.rasiIdx].push(p);
 
-  // SI grid order: which rasi goes where
-  // (0-indexed rasi: 0=Mesha,1=Rishabha,...,11=Meena)
-  // Row0: Meena(11), Mesha(0), Rishabha(1), Mithuna(2)
-  // Row1: Kumbha(10), CENTRE_TOP_L, CENTRE_TOP_R, Kataka(3)
-  // Row2: Makara(9), CENTRE_BOT_L, CENTRE_BOT_R, Simha(4)
-  // Row3: Dhanu(8), Vrischika(7), Tula(6), Kanya(5)
-
   function makeCell(rasiIdx) {
     const isLagna = rasiIdx === data.lagnaRasi;
     const planets = rasiMap[rasiIdx];
-    // rasi label top-right, lagna triangle top-left are absolutely positioned
+    const hNum = houseNum(rasiIdx);
+
     let inner = `<div class="rasi-name">${RASI_SHORT[rasiIdx]}</div>`;
+    inner += `<div class="house-num">${hNum}</div>`;
     if (isLagna) inner += `<div class="lagna-tri"></div>`;
 
-    // Planet content: centered block
     let content = '';
     if (isLagna) {
       content += `<div class="pl"><span class="pl-n lagna-pl">ல</span><span class="pl-d">${data.lagnaRawDeg.toFixed(0)}°</span></div>`;
     }
     for (const p of planets) {
-      const degStr = p.deg.toFixed(0) + '°';
       const retMark = p.retro ? '*' : '';
       content += `<div class="pl">
         <span class="pl-n ${p.status}">${p.short}${retMark}</span>
-        <span class="pl-d">${degStr}</span>
+        <span class="pl-d">${p.deg.toFixed(0)}°</span>
       </div>`;
     }
     return `<div class="cell">${inner}<div class="cell-content">${content}</div></div>`;
   }
 
+  // Build grid HTML
   // Row 0
-  el.innerHTML += makeCell(11); // Meena
-  el.innerHTML += makeCell(0);  // Mesha
-  el.innerHTML += makeCell(1);  // Rishabha
-  el.innerHTML += makeCell(2);  // Mithuna
-
-  // Row 1: Kumbha, CENTRE (spans 2×2), Kataka
-  el.innerHTML += makeCell(10); // Kumbha
-  // Centre cell (spans 2 cols × 2 rows)
-  el.innerHTML += `<div class="cell centre">
+  el.innerHTML += makeCell(11);
+  el.innerHTML += makeCell(0);
+  el.innerHTML += makeCell(1);
+  el.innerHTML += makeCell(2);
+  // Row 1
+  el.innerHTML += makeCell(10);
+  // Centre cell — will hold SVG aspects + lagna info
+  el.innerHTML += `<div class="cell centre" id="${containerId}-centre">
     <div class="centre-label">ராசி</div>
     <div class="centre-rasi">${RASI[data.lagnaRasi]}<br/>லக்னம்
-    <span style="color:var(--degree);font-size:10px;"> ${data.lagnaRawDeg.toFixed(1)}°</span><br/>
-    <span style="color:#444;font-size:7.5px;">
-      LST:${data.lst ? data.lst.toFixed(1)+'°' : ''}<br/>
-      UT:${data.utH ? data.utH.toFixed(2)+'h' : ''}
-    </span>
+      <span style="color:var(--degree);font-size:10px;"> ${data.lagnaRawDeg.toFixed(1)}°</span>
     </div>
+    <svg class="aspect-svg" id="${containerId}-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>`;
-  el.innerHTML += makeCell(3);  // Kataka
-
-  // Row 2: Makara, (centre continues), Simha
-  el.innerHTML += makeCell(9);  // Makara
-  el.innerHTML += makeCell(4);  // Simha
-
+  el.innerHTML += makeCell(3);
+  // Row 2
+  el.innerHTML += makeCell(9);
+  el.innerHTML += makeCell(4);
   // Row 3
-  el.innerHTML += makeCell(8);  // Dhanu
-  el.innerHTML += makeCell(7);  // Vrischika
-  el.innerHTML += makeCell(6);  // Tula
-  el.innerHTML += makeCell(5);  // Kanya
+  el.innerHTML += makeCell(8);
+  el.innerHTML += makeCell(7);
+  el.innerHTML += makeCell(6);
+  el.innerHTML += makeCell(5);
+
+  // Draw aspects into SVG after DOM is ready
+  requestAnimationFrame(() => drawAspects(containerId, data));
+}
+
+// ── ASPECT DRAWING ──────────────────────────────────────────────
+// Maps each rasi (0-11) to a centre-point in the SVG 100×100 space
+// Layout matches the 4×4 grid (centre is rows 1-2, cols 1-2)
+// Each cell occupies 25% of the chart width
+function drawAspects(containerId, data) {
+  const svg = document.getElementById(containerId + '-svg');
+  if (!svg) return;
+
+  // Centre coordinates of each rasi cell in the 4×4 grid (normalised 0-100)
+  // Grid positions (col, row) for each rasi in the 4-column layout:
+  const RASI_POS = {
+    11: [12.5, 12.5], 0:  [37.5, 12.5], 1:  [62.5, 12.5], 2:  [87.5, 12.5],
+    10: [12.5, 37.5],                                        3:  [87.5, 37.5],
+     9: [12.5, 62.5],                                        4:  [87.5, 62.5],
+     8: [12.5, 87.5], 7:  [37.5, 87.5], 6:  [62.5, 87.5], 5:  [87.5, 87.5]
+  };
+  // Centre box centre point (for aspect lines to emanate from planet's rasi)
+  const CX = 50, CY = 50;
+
+  // Find planets with aspects
+  const ASPECT_PLANETS = [
+    { name: 'குரு',     color: '#44FF88', dash: '',        aspects: [5,7,9] },  // 5th,7th,9th
+    { name: 'சனி',     color: '#FF8C00', dash: '4,2',     aspects: [3,7,10] }, // 3rd,7th,10th
+    { name: 'செவ்வாய்', color: '#FF4444', dash: '2,2',    aspects: [4,7,8] },  // 4th,7th,8th
+  ];
+
+  let svgContent = '';
+
+  for (const ap of ASPECT_PLANETS) {
+    const planet = data.planets.find(p => p.name === ap.name);
+    if (!planet) continue;
+
+    const fromRasi = planet.rasiIdx;
+    const fromPos = RASI_POS[fromRasi];
+    if (!fromPos) continue; // planet in centre rasi (shouldn't happen)
+
+    for (const aspHouse of ap.aspects) {
+      // Target rasi = fromRasi + (aspHouse-1) houses clockwise
+      const CW_ORDER = [11,0,1,2,3,4,5,6,7,8,9,10];
+      const fromCWIdx = CW_ORDER.indexOf(fromRasi);
+      const targetCWIdx = (fromCWIdx + aspHouse - 1) % 12;
+      const targetRasi = CW_ORDER[targetCWIdx];
+      const toPos = RASI_POS[targetRasi];
+      if (!toPos) continue;
+
+      // Clip line to centre-box boundary (25-75 range)
+      // From point: clamp to edge of centre box
+      const fx = Math.max(26, Math.min(74, fromPos[0]));
+      const fy = Math.max(26, Math.min(74, fromPos[1]));
+      const tx = Math.max(26, Math.min(74, toPos[0]));
+      const ty = Math.max(26, Math.min(74, toPos[1]));
+
+      const dashAttr = ap.dash ? `stroke-dasharray="${ap.dash}"` : '';
+      // Arrowhead marker id
+      const markerId = `arr-${ap.name.replace(/[^a-z]/gi,'')}-${containerId}`;
+
+      svgContent += `<defs>
+        <marker id="${markerId}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L6,3 z" fill="${ap.color}" opacity="0.8"/>
+        </marker>
+      </defs>
+      <line x1="${fx}" y1="${fy}" x2="${tx}" y2="${ty}"
+        stroke="${ap.color}" stroke-width="1.5" opacity="0.75"
+        ${dashAttr} marker-end="url(#${markerId})"/>`;
+    }
+  }
+
+  svg.innerHTML = svgContent;
 }
 
 // ═══════════════════════════════════════════════════
@@ -1333,6 +1461,21 @@ function refreshNow() {
   renderAll(jd, true);
 }
 
+function toggleDatePanel() {
+  const btn  = document.getElementById('date-toggle-btn');
+  const body = document.getElementById('date-toggle-body');
+  const isOpen = body.classList.contains('open');
+  btn.classList.toggle('open', !isOpen);
+  body.classList.toggle('open', !isOpen);
+}
+
+function updateDateLabel() {
+  const d = document.getElementById('sel-date')?.value;
+  const t = document.getElementById('sel-time')?.value;
+  const lbl = document.getElementById('date-toggle-label');
+  if (lbl && d) lbl.textContent = `${d} ${t||''} — தேர்வு செய்தது`;
+}
+
 function calcDateChart() {
   const dateVal = document.getElementById('sel-date').value;
   const timeVal = document.getElementById('sel-time').value;
@@ -1342,6 +1485,10 @@ function calcDateChart() {
   const { jd } = istToJD(istY, istM, istD, istHH, istMM);
   const { lat, lon } = getSelectedLatLon();
   renderAll(jd, false, lat, lon);
+  updateDateLabel();
+  // Collapse panel after calculation
+  document.getElementById('date-toggle-btn')?.classList.remove('open');
+  document.getElementById('date-toggle-body')?.classList.remove('open');
 }
 
 // TAB SWITCHING
