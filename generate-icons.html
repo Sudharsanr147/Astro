@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Icon Generator</title>
+<style>
+body { background:#080810; color:#EEE; font-family:sans-serif; padding:20px; text-align:center; }
+canvas { border:1px solid #333; margin:10px; border-radius:12px; }
+button { background:#E8A020; color:#000; border:none; padding:10px 20px; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; margin:8px; }
+h3 { color:#E8A020; }
+</style>
+</head>
+<body>
+<h3>🔮 ஜோதிஷம் — Icon Generator</h3>
+<p style="color:#888;font-size:12px;">Click buttons to download icons. Upload to your GitHub repo.</p>
+
+<canvas id="c192" width="192" height="192"></canvas>
+<canvas id="c512" width="512" height="512"></canvas>
+<br>
+<button onclick="download(192)">⬇ Download icon-192.png</button>
+<button onclick="download(512)">⬇ Download icon-512.png</button>
+
+<script>
+function drawIcon(canvas, size) {
+  const ctx = canvas.getContext('2d');
+  const s = size;
+
+  // Background
+  const bg = ctx.createRadialGradient(s/2, s/2, 0, s/2, s/2, s/2);
+  bg.addColorStop(0, '#1A1030');
+  bg.addColorStop(1, '#080810');
+  ctx.fillStyle = bg;
+  ctx.beginPath();
+  ctx.roundRect(0, 0, s, s, s * 0.18);
+  ctx.fill();
+
+  // Outer gold ring
+  ctx.strokeStyle = '#E8A020';
+  ctx.lineWidth = s * 0.025;
+  ctx.beginPath();
+  ctx.arc(s/2, s/2, s * 0.42, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Inner subtle ring
+  ctx.strokeStyle = '#E8A02044';
+  ctx.lineWidth = s * 0.01;
+  ctx.beginPath();
+  ctx.arc(s/2, s/2, s * 0.35, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Star dots around circle (27 natchatras)
+  for (let i = 0; i < 27; i++) {
+    const angle = (i / 27) * Math.PI * 2 - Math.PI / 2;
+    const r = s * 0.42;
+    const x = s/2 + Math.cos(angle) * r;
+    const y = s/2 + Math.sin(angle) * r;
+    ctx.fillStyle = i % 9 === 0 ? '#F5C842' : '#E8A02077';
+    ctx.beginPath();
+    ctx.arc(x, y, s * (i % 9 === 0 ? 0.022 : 0.012), 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Crescent moon symbol
+  ctx.fillStyle = '#F5C842';
+  ctx.beginPath();
+  ctx.arc(s/2, s * 0.38, s * 0.14, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#1A1030';
+  ctx.beginPath();
+  ctx.arc(s * 0.56, s * 0.36, s * 0.11, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Tamil text ஜோ
+  ctx.fillStyle = '#FFE066';
+  ctx.font = `bold ${s * 0.18}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('ஜோ', s/2, s * 0.64);
+
+  // Subtle glow under text
+  ctx.fillStyle = '#E8A02022';
+  ctx.beginPath();
+  ctx.ellipse(s/2, s * 0.68, s * 0.28, s * 0.04, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+const c192 = document.getElementById('c192');
+const c512 = document.getElementById('c512');
+drawIcon(c192, 192);
+drawIcon(c512, 512);
+
+function download(size) {
+  const canvas = document.getElementById('c' + size);
+  const link = document.createElement('a');
+  link.download = `icon-${size}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+</script>
+</body>
+</html>
