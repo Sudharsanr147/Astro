@@ -1197,20 +1197,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function refreshNow() {
-  const now = new Date(); // device local time
-  // Extract IST components from local time
-  // (assumes device is set to IST, which is standard for Indian users)
-  const istY  = now.getFullYear();
-  const istM  = now.getMonth() + 1;
-  const istD  = now.getDate();
-  const istHH = now.getHours();
-  const istMM = now.getMinutes();
+  const now = new Date(); // JS Date always stores UTC internally
 
+  // Display in IST for the user
+  const istOffset = 330; // minutes
+  const istMs = now.getTime() + istOffset * 60000;
+  const istDate = new Date(istMs);
   const pad = n => String(n).padStart(2,'0');
   document.getElementById('now-time-label').textContent =
-    `${istD}/${istM}/${istY} ${pad(istHH)}:${pad(istMM)} IST`;
+    `${istDate.getUTCDate()}/${istDate.getUTCMonth()+1}/${istDate.getUTCFullYear()} `
+    + `${pad(istDate.getUTCHours())}:${pad(istDate.getUTCMinutes())} IST`;
 
-  const { jd } = istToJD(istY, istM, istD, istHH, istMM);
+  // julianDay() reads getUTC* — so passing new Date() directly gives correct UT-based JD
+  const jd = julianDay(now);
   renderAll(jd, true);
 }
 
