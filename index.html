@@ -862,10 +862,11 @@ function getLagnaRasi(jd, lat = 13.0827, geoLon = 80.2707) {
   const e    = eps * R;
   const phi  = lat * R;
 
-  // ASC = atan2(-cos(RAMC),  sin(RAMC)*cos(e) + tan(phi)*sin(e))
+  // ASC formula gives eastern horizon point
+  // atan2 result needs +180 to convert from descendant to ascendant
   const num = -Math.cos(RAMC);
   const den =  Math.sin(RAMC) * Math.cos(e) + Math.tan(phi) * Math.sin(e);
-  let tropAsc = (Math.atan2(num, den) / R + 360) % 360;
+  let tropAsc = ((Math.atan2(num, den) / R) + 180 + 360) % 360;
 
   // Lahiri ayanamsha (Chitrapaksha)
   const ayan = ayanamsha(jd);
