@@ -56,37 +56,59 @@ body {
 
 /* ── TABS ── */
 .tabs {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
   background: var(--bg2);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border-gold);
   flex-shrink: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
 }
-.tabs::-webkit-scrollbar { display: none; }
 .tab {
-  flex: 1; min-width: 80px;
-  padding: 9px 4px 7px;
+  padding: 9px 6px 8px;
   text-align: center;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-dim);
   cursor: pointer;
   border-bottom: 2px solid transparent;
-  white-space: nowrap;
-  transition: color 0.2s;
+  white-space: normal;
+  line-height: 1.3;
+  transition: color 0.2s, background 0.2s;
+  border-right: 1px solid var(--border);
 }
-.tab.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
+.tab:nth-child(2), .tab:nth-child(4) { border-right: none; }
+.tab:nth-child(1), .tab:nth-child(2) { border-bottom: 1px solid var(--border); }
+.tab.active {
+  color: var(--gold);
+  background: #13132A;
+  border-bottom: 2px solid var(--gold);
+}
 
 /* ── SCROLL AREA ── */
 .scroll-area {
   flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+/* Swipeable page container */
+.pages-track {
+  display: flex;
+  width: 400%;
+  height: 100%;
+  transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+  will-change: transform;
+}
+.page {
+  width: 25%;
+  height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+  padding: 10px 10px 80px;
+  flex-shrink: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
-.page { display: none; padding: 10px 10px 80px; }
-.page.active { display: block; }
+.page::-webkit-scrollbar { width: 3px; }
+.page::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
 /* ── DATE PICKER STRIP ── */
 .date-strip {
@@ -161,7 +183,9 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
 }
 
 /* The centre 2×2 block */
@@ -199,7 +223,17 @@ body {
 }
 
 /* Planet row */
-.pl { display: flex; align-items: baseline; gap: 2px; line-height: 1.15; }
+.pl { display: flex; align-items: baseline; justify-content: center; gap: 2px; line-height: 1.2; }
+
+/* Inner centered content block inside cell */
+.cell-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+}
 .pl-n {
   font-size: 12px;
   font-weight: 700;
@@ -354,10 +388,11 @@ tbody tr:hover td { background: #13132A; }
 </div>
 
 <!-- SCROLL AREA -->
-<div class="scroll-area">
+<div class="scroll-area" id="scroll-area">
+<div class="pages-track" id="pages-track">
 
   <!-- ════ TAB 0: NOW LAGNA ════ -->
-  <div class="page active" id="page0">
+  <div class="page" id="page0">
     <div id="now-info" class="date-strip" style="justify-content:center;">
       <span style="font-size:11px;color:var(--text-dim);">தற்போதைய நேரம்: </span>
       <span id="now-time-label" style="font-size:11px;color:var(--gold);font-weight:700;"></span>
@@ -435,6 +470,7 @@ tbody tr:hover td { background: #13132A; }
     <div id="star-chart-3"></div>
   </div>
 
+</div><!-- end pages-track -->
 </div><!-- end scroll-area -->
 
 <!-- BOTTOM NAV -->
@@ -715,21 +751,24 @@ function renderSIChart(containerId, data) {
   function makeCell(rasiIdx) {
     const isLagna = rasiIdx === data.lagnaRasi;
     const planets = rasiMap[rasiIdx];
-    let html = `<div class="rasi-name">${RASI_SHORT[rasiIdx]}</div>`;
+    // rasi label top-right, lagna triangle top-left are absolutely positioned
+    let inner = `<div class="rasi-name">${RASI_SHORT[rasiIdx]}</div>`;
+    if (isLagna) inner += `<div class="lagna-tri"></div>`;
+
+    // Planet content: centered block
+    let content = '';
     if (isLagna) {
-      html += `<div class="lagna-tri"></div>`;
-      // Add 'ல' as lagna marker
-      html += `<div class="pl"><span class="pl-n lagna-pl">ல</span></div>`;
+      content += `<div class="pl"><span class="pl-n lagna-pl">ல</span><span class="pl-d">${data.lagnaRawDeg.toFixed(0)}°</span></div>`;
     }
     for (const p of planets) {
       const degStr = p.deg.toFixed(0) + '°';
       const retMark = p.retro ? '*' : '';
-      html += `<div class="pl">
+      content += `<div class="pl">
         <span class="pl-n ${p.status}">${p.short}${retMark}</span>
         <span class="pl-d">${degStr}</span>
       </div>`;
     }
-    return `<div class="cell">${html}</div>`;
+    return `<div class="cell">${inner}<div class="cell-content">${content}</div></div>`;
   }
 
   // Row 0
@@ -931,17 +970,61 @@ function calcDateChart() {
 }
 
 // TAB SWITCHING
+let currentTab = 0;
+const TOTAL_TABS = 4;
+
 function showTab(idx) {
-  document.querySelectorAll('.page').forEach((p,i) => p.classList.toggle('active', i===idx));
+  if (idx < 0 || idx >= TOTAL_TABS) return;
+  currentTab = idx;
+  // Move track
+  document.getElementById('pages-track').style.transform = `translateX(-${idx * 25}%)`;
+  // Update tab highlights
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
   document.querySelectorAll('.bn-item').forEach((b,i) => b.classList.toggle('active', i===idx));
-  document.querySelector('.scroll-area').scrollTop = 0;
 }
+
+// ── SWIPE DETECTION on scroll-area ──
+(function() {
+  const area = document.getElementById('scroll-area');
+  let startX = 0, startY = 0, startScrollTop = 0;
+  let swiping = false;
+
+  area.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    // Get current page's scroll position
+    const pg = document.getElementById('page' + currentTab);
+    startScrollTop = pg ? pg.scrollTop : 0;
+    swiping = false;
+  }, {passive: true});
+
+  area.addEventListener('touchmove', e => {
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    const pg = document.getElementById('page' + currentTab);
+    // If scrolled down in current page, don't intercept vertical scroll
+    if (!swiping && Math.abs(dy) > Math.abs(dx)) return;
+    // Only mark as swiping if horizontal movement is dominant
+    if (!swiping && Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      swiping = true;
+    }
+    if (swiping) e.preventDefault();
+  }, {passive: false});
+
+  area.addEventListener('touchend', e => {
+    if (!swiping) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (dx < -50 && currentTab < TOTAL_TABS - 1) showTab(currentTab + 1);
+    else if (dx > 50 && currentTab > 0) showTab(currentTab - 1);
+    swiping = false;
+  }, {passive: true});
+})();
 
 // BOOT
 window.addEventListener('load', () => {
   refreshNow();
   calcDateChart();
+  showTab(0);
 });
 </script>
 </body>
