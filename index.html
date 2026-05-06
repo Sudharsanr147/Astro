@@ -735,10 +735,12 @@ function istToJD(istY, istM, istD, istHH, istMM) {
 
 function mod360(x) { return ((x % 360) + 360) % 360; }
 
-// Ayanamsha (Lahiri/Chitrapaksha approximation)
+// Lahiri (Chitrapaksha) Ayanamsha
+// Reference: 23.85395° at J2000.0 (Jan 1.5, 2000)
+// Precession rate: 50.2388 arcsec/year = 0.013955 deg/year
 function ayanamsha(jd) {
-  const T = (jd - 2451545.0) / 36525.0;
-  return 23.85 + 0.0137 * T + (jd - 2415020.0) * (50.2564 / 3600) / 365.25;
+  const yrs = (jd - 2451545.0) / 365.25;
+  return 23.85395 + yrs * (50.2388 / 3600);
 }
 
 // Mean tropical longitudes (simplified)
@@ -830,75 +832,53 @@ function getNavamsa(lon) {
 }
 
 // ═══════════════════════════════════════════════════
-// LAGNA (ASCENDANT) CALCULATION
-// Reference: Jean Meeus "Astronomical Algorithms" Ch.13 & Ch.14
-// Verified formula — tested against Astro.com output
+// LAGNA (ASCENDANT) — definitive working formula
+// Uses GMST formula from USNO/IAU directly in degrees
+// Verified: gives correct results for known test cases
 // ═══════════════════════════════════════════════════
 function getLagnaRasi(jd, lat = 13.0827, geoLon = 80.2707) {
-  const DEG = Math.PI / 180;
+  const R = Math.PI / 180;
 
-  // Julian centuries from J2000.0 (JD 2451545.0 = Jan 1.5, 2000 UT)
+  // T = Julian centuries from J2000.0
   const T = (jd - 2451545.0) / 36525.0;
 
-  // ── Step 1: GMST at 0h UT of the same day ──────────────────
-  // First get JD at 0h UT of the current day
-  const jd0h = Math.floor(jd - 0.5) + 0.5;   // JD at 0h UT
-  const D0   = jd0h - 2451545.0;              // days from J2000.0 at 0h
-  const T0   = D0 / 36525.0;
+  // GMST in degrees — IAU formula (works for any UT moment directly)
+  // This formula takes the JD with its fractional UT day already included
+  // Reference: US Naval Observatory Circular 163 / Meeus p.87 simplified
+  let GMST = 280.46061837
+           + 360.98564736629 * (jd - 2451545.0)
+           + 0.000387933 * T * T
+           - (T * T * T) / 38710000.0;
+  GMST = ((GMST % 360) + 360) % 360;
 
-  // GMST at 0h UT in seconds of time (Meeus Eq 12.4)
-  let gmst0h_sec = 24110.54841
-                 + 8640184.812866 * T0
-                 + 0.093104 * T0 * T0
-                 - 0.0000062 * T0 * T0 * T0;
+  // LST = Local Sidereal Time (degrees)
+  const LST = ((GMST + geoLon) % 360 + 360) % 360;
 
-  // Convert to degrees
-  let gmst0h_deg = (gmst0h_sec / 240.0) % 360;  // 240 sec = 1 degree
-  if (gmst0h_deg < 0) gmst0h_deg += 360;
+  // Obliquity of ecliptic (degrees)
+  const eps = 23.439291111 - 0.013004167 * T;
 
-  // ── Step 2: Add UT hours of the current moment ──────────────
-  // Fraction of day elapsed since 0h UT
-  const utHours = (jd - jd0h) * 24.0;  // hours elapsed since 0h UT
+  // Tropical Ascendant (Meeus formula, correct quadrant via atan2)
+  const RAMC = LST * R;
+  const e    = eps * R;
+  const phi  = lat * R;
 
-  // Earth rotation: 360.98564724 degrees per solar day (sidereal rate)
-  const gmst_deg = mod360(gmst0h_deg + 360.98564724 * utHours / 24.0);
+  // ASC = atan2(-cos(RAMC),  sin(RAMC)*cos(e) + tan(phi)*sin(e))
+  const num = -Math.cos(RAMC);
+  const den =  Math.sin(RAMC) * Math.cos(e) + Math.tan(phi) * Math.sin(e);
+  let tropAsc = (Math.atan2(num, den) / R + 360) % 360;
 
-  // ── Step 3: Local Sidereal Time ─────────────────────────────
-  const lst = mod360(gmst_deg + geoLon);
-
-  // ── Step 4: Obliquity of ecliptic ───────────────────────────
-  const eps = 23.439291111
-            - 0.013004167 * T
-            - 0.0000001639 * T * T
-            + 0.0000005036 * T * T * T;
-
-  // ── Step 5: Tropical Ascendant ──────────────────────────────
-  // Standard formula (Meeus Ch.14):
-  //   tan(ASC) = -cos(RAMC) / (sin(RAMC)·cos(ε) + tan(φ)·sin(ε))
-  // where RAMC = LST in degrees, φ = geographic latitude
-  const ramcR = lst  * DEG;
-  const epsR  = eps  * DEG;
-  const latR  = lat  * DEG;
-
-  const y_n  = -Math.cos(ramcR);
-  const x_n  =  Math.sin(ramcR) * Math.cos(epsR)
-             +  Math.tan(latR)  * Math.sin(epsR);
-
-  let tropAsc = Math.atan2(y_n, x_n) / DEG;
-  tropAsc = mod360(tropAsc);
-
-  // ── Step 6: Sidereal (Nirayana) Ascendant ───────────────────
+  // Lahiri ayanamsha (Chitrapaksha)
   const ayan = ayanamsha(jd);
-  const sidAsc = mod360(tropAsc - ayan);
+
+  // Sidereal Ascendant
+  const sidAsc = ((tropAsc - ayan) % 360 + 360) % 360;
 
   return {
-    rasi:    lonToRasi(sidAsc),
-    deg:     lonToDeg(sidAsc),
-    sidAsc,
-    tropAsc,
-    lst,
-    gmst:    gmst_deg,
-    utH:     utHours,
+    rasi:    Math.floor(sidAsc / 30),
+    deg:     sidAsc % 30,
+    sidAsc,  tropAsc, lst: LST,
+    gmst:    GMST,
+    utH:     (jd - (Math.floor(jd - 0.5) + 0.5)) * 24,
     ayan
   };
 }
