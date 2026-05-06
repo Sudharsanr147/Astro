@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ஜோதிஷம்</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#080810">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ஜோதிஷம்">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="description" content="தென்னிந்திய ஜோதிஷம் — கிரக நிலைகள், லக்னம், நவாம்சம்">
+
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;500;600;700&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -362,8 +373,59 @@ tbody tr:hover td { background: #13132A; }
 .scroll-area::-webkit-scrollbar { width: 4px; }
 .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
+/* ── PWA INSTALL BANNER ── */
+#install-banner {
+  display: none;
+  position: fixed;
+  bottom: 70px;
+  left: 50%; transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 456px;
+  background: linear-gradient(135deg, #1A1A2E, #16213E);
+  border: 1px solid var(--border-gold);
+  border-radius: 12px;
+  padding: 12px 14px;
+  z-index: 200;
+  box-shadow: 0 8px 32px #000000AA;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+#install-banner.show { display: flex; align-items: center; gap: 12px; }
+.ib-icon { font-size: 28px; flex-shrink: 0; }
+.ib-text { flex: 1; }
+.ib-title { font-size: 13px; font-weight: 700; color: var(--gold-light); }
+.ib-sub   { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.ib-btns  { display: flex; gap: 6px; flex-shrink: 0; }
+.ib-install {
+  background: var(--gold); color: #000;
+  border: none; border-radius: 7px;
+  padding: 6px 12px; font-size: 11px; font-weight: 700;
+  cursor: pointer;
+}
+.ib-dismiss {
+  background: transparent; color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 8px; font-size: 11px;
+  cursor: pointer;
+}
+
+/* ── OFFLINE TOAST ── */
+#offline-toast {
+  display: none;
+  position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+  background: #FF4444DD; color: #fff;
+  padding: 6px 16px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+  z-index: 300;
+}
+#offline-toast.show { display: block; }
+
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-.page.active { animation: fadeIn 0.3s ease; }
+.page { animation: fadeIn 0.3s ease; }
 </style>
 </head>
 <body>
@@ -472,6 +534,22 @@ tbody tr:hover td { background: #13132A; }
 
 </div><!-- end pages-track -->
 </div><!-- end scroll-area -->
+
+<!-- PWA INSTALL BANNER -->
+<div id="install-banner">
+  <div class="ib-icon">🔮</div>
+  <div class="ib-text">
+    <div class="ib-title">ஆப்பை நிறுவுங்கள்!</div>
+    <div class="ib-sub">முகப்புத் திரையில் சேர்க்கவும் — இணையம் இல்லாமலும் பயன்படுத்தலாம்</div>
+  </div>
+  <div class="ib-btns">
+    <button class="ib-install" id="ib-install-btn">நிறுவு</button>
+    <button class="ib-dismiss" id="ib-dismiss-btn">✕</button>
+  </div>
+</div>
+
+<!-- OFFLINE TOAST -->
+<div id="offline-toast">📡 இணைப்பு இல்லை — offline mode</div>
 
 <!-- BOTTOM NAV -->
 <div class="bot-nav">
@@ -1026,6 +1104,56 @@ window.addEventListener('load', () => {
   calcDateChart();
   showTab(0);
 });
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.log('SW failed:', err));
+  });
+}
+
+// ── PWA: INSTALL PROMPT ──
+let deferredPrompt = null;
+const banner = document.getElementById('install-banner');
+const installBtn = document.getElementById('ib-install-btn');
+const dismissBtn = document.getElementById('ib-dismiss-btn');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show banner after 3 seconds
+  setTimeout(() => banner.classList.add('show'), 3000);
+});
+
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  banner.classList.remove('show');
+});
+
+dismissBtn.addEventListener('click', () => {
+  banner.classList.remove('show');
+  // Don't show again for 7 days
+  localStorage.setItem('pwa_dismissed', Date.now());
+});
+
+// Don't show if recently dismissed
+window.addEventListener('load', () => {
+  const dismissed = localStorage.getItem('pwa_dismissed');
+  if (dismissed && Date.now() - parseInt(dismissed) < 7 * 24 * 60 * 60 * 1000) {
+    // suppress
+    window.addEventListener('beforeinstallprompt', e => e.preventDefault(), {once: true});
+  }
+});
+
+// ── OFFLINE / ONLINE DETECTION ──
+const offlineToast = document.getElementById('offline-toast');
+window.addEventListener('offline', () => offlineToast.classList.add('show'));
+window.addEventListener('online',  () => offlineToast.classList.remove('show'));
+if (!navigator.onLine) offlineToast.classList.add('show');
 </script>
 </body>
 </html>
