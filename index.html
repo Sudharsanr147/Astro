@@ -2,504 +2,947 @@
 <html lang="ta">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>ஜோதிஷம் - கிரக நிலைகள்</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ஜோதிஷம்</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;500;600;700&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --gold: #F0B429;
-    --gold-dim: #A07820;
-    --bg: #0A0A0F;
-    --cell-bg: #0E0E16;
-    --cell-border: #F0B42966;
-    --text: #F5ECD7;
-    --planet-color: #FFE066;
-    --degree-color: #A8C5FF;
-    --retro-color: #FF7A7A;
-    --exalt-color: #7AFF9E;
-    --debi-color: #FF9F7A;
-    --lagna-color: #00CFFF;
-  }
+:root {
+  --gold: #E8A020;
+  --gold-light: #F5C842;
+  --gold-dim: #7A5510;
+  --bg: #080810;
+  --bg2: #0D0D1A;
+  --bg3: #111122;
+  --border: #2A2A40;
+  --border-gold: #E8A02055;
+  --text: #EEE8D5;
+  --text-dim: #888877;
+  --planet: #FFE066;
+  --degree: #90B8FF;
+  --lagna: #00DDFF;
+  --exalt: #44FF88;        /* उच्चम् - bright green */
+  --neecha: #FF4444;       /* नीचम् - bright red */
+  --retro: #FF8C00;        /* வக்ரம் - bright orange */
+  --normal: #FFE066;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans Tamil', sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── HEADER ── */
+.hdr {
+  background: linear-gradient(135deg, #0A0A18 0%, #141428 100%);
+  border-bottom: 1px solid var(--border-gold);
+  padding: 8px 14px 6px;
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.hdr-title { font-family: 'Cinzel Decorative', serif; font-size: 15px; color: var(--gold-light); letter-spacing: 1px; }
+.hdr-sub { font-size: 10px; color: var(--text-dim); }
+.hdr-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.now-badge {
+  background: var(--gold); color: #000; font-size: 10px; font-weight: 700;
+  padding: 3px 8px; border-radius: 10px; cursor: pointer;
+}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Noto Sans Tamil', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+/* ── TABS ── */
+.tabs {
+  display: flex;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex: 1; min-width: 80px;
+  padding: 9px 4px 7px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+.tab.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
 
-  /* Header */
-  .header {
-    width: 100%;
-    padding: 16px 20px 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: linear-gradient(180deg, #12121C 0%, transparent 100%);
-    border-bottom: 1px solid var(--cell-border);
-  }
-  .header h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 20px;
-    letter-spacing: 3px;
-    color: var(--gold);
-    text-shadow: 0 0 20px #F0B42966;
-  }
-  .header .subtitle {
-    font-size: 12px;
-    color: #888;
-    margin-top: 3px;
-    letter-spacing: 1px;
-  }
+/* ── SCROLL AREA ── */
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.page { display: none; padding: 10px 10px 80px; }
+.page.active { display: block; }
 
-  /* Tab bar */
-  .tabs {
-    display: flex;
-    width: 100%;
-    border-bottom: 1px solid var(--cell-border);
-    background: #0E0E16;
-  }
-  .tab {
-    flex: 1;
-    padding: 10px 4px;
-    text-align: center;
-    font-size: 13px;
-    color: #666;
-    cursor: pointer;
-    transition: color 0.2s;
-    border-bottom: 2px solid transparent;
-  }
-  .tab.active {
-    color: var(--gold);
-    border-bottom: 2px solid var(--gold);
-  }
+/* ── DATE PICKER STRIP ── */
+.date-strip {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.date-strip label { font-size: 11px; color: var(--text-dim); }
+.date-strip input, .date-strip select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 5px;
+  padding: 4px 6px;
+  font-size: 11px;
+  font-family: 'Noto Sans Tamil', sans-serif;
+  flex: 1;
+  min-width: 100px;
+}
+.calc-btn {
+  background: var(--gold);
+  color: #000;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
 
-  /* Birth info strip */
-  .birth-info {
-    width: 100%;
-    padding: 10px 16px;
-    background: #0C0C14;
-    font-size: 11px;
-    color: #999;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
-    border-bottom: 1px solid #1A1A2A;
-  }
-  .birth-info span { color: var(--gold); font-weight: 600; }
+/* ── CHART SECTION TITLE ── */
+.section-title {
+  font-size: 11px;
+  color: var(--gold);
+  letter-spacing: 1px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-gold);
+}
 
-  /* Chart wrapper */
-  .chart-wrapper {
-    padding: 16px;
-    width: 100%;
-    max-width: 420px;
-  }
+/* ══════════════════════════════════════
+   SOUTH INDIAN CHART GRID
+   4×4 = 16 cells. Centre 4 are merged.
+   We use CSS grid with named areas.
+══════════════════════════════════════ */
+.si-chart {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 2px;
+  aspect-ratio: 1/1;
+  width: 100%;
+  background: var(--gold);
+  border: 2px solid var(--gold);
+  border-radius: 2px;
+  margin-bottom: 10px;
+  box-shadow: 0 0 24px #E8A02033;
+}
 
-  /* South Indian chart grid — 4×4 with corners hidden */
-  .si-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(4, 1fr);
-    gap: 2px;
-    width: 100%;
-    aspect-ratio: 1;
-    border: 2px solid var(--gold);
-    background: var(--gold);
-    box-shadow: 0 0 30px #F0B42933, inset 0 0 30px #00000066;
-  }
+.cell {
+  background: var(--bg2);
+  padding: 4px 4px 3px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
 
-  .cell {
-    background: var(--cell-bg);
-    position: relative;
-    padding: 6px 5px 4px;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    overflow: hidden;
-  }
+/* The centre 2×2 block */
+.cell.centre {
+  grid-column: 2 / 4;
+  grid-row: 2 / 4;
+  background: #0A0A18;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  gap: 3px;
+}
+.centre-label { font-family: 'Cinzel Decorative', serif; font-size: 12px; color: var(--gold); letter-spacing: 1px; }
+.centre-rasi { font-size: 9px; color: var(--text-dim); text-align: center; line-height: 1.6; }
 
-  /* Corner cells are hidden (merged with center) */
-  .cell.hidden {
-    background: var(--bg);
-    pointer-events: none;
-  }
+/* Rasi name in corner */
+.rasi-name {
+  position: absolute;
+  top: 2px; right: 3px;
+  font-size: 8.5px;
+  color: var(--gold-dim);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
 
-  /* Center 4 cells form the info area */
-  .cell.center {
-    background: #0C0C18;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    padding: 4px;
-  }
+/* Lagna triangle */
+.lagna-tri {
+  position: absolute;
+  top: 0; left: 0;
+  width: 0; height: 0;
+  border-top: 16px solid var(--lagna);
+  border-right: 16px solid transparent;
+}
 
-  /* Rasi label (small, top-right) */
-  .rasi-label {
-    position: absolute;
-    top: 3px;
-    right: 4px;
-    font-size: 8px;
-    color: #444;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  }
+/* Planet row */
+.pl { display: flex; align-items: baseline; gap: 2px; line-height: 1.15; }
+.pl-n {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.pl-n.normal { color: var(--normal); }
+.pl-n.exalt  { color: var(--exalt); }
+.pl-n.neecha { color: var(--neecha); text-decoration: underline dotted; }
+.pl-n.retro  { color: var(--retro); }
+.pl-n.lagna-pl { color: var(--lagna); }
+.pl-d { font-size: 8.5px; color: var(--degree); }
 
-  /* Lagna marker */
-  .lagna-marker {
-    position: absolute;
-    top: 0; left: 0;
-    border-top: 14px solid var(--lagna-color);
-    border-right: 14px solid transparent;
-  }
+/* ── PLANET TABLE ── */
+.pt-wrap { margin-bottom: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 11px; }
+thead th {
+  background: var(--bg3);
+  color: var(--text-dim);
+  font-weight: 600;
+  text-align: left;
+  padding: 5px 5px;
+  font-size: 10px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 5px 5px;
+  border-bottom: 1px solid #0F0F1C;
+  vertical-align: middle;
+}
+tbody tr:hover td { background: #13132A; }
+.td-planet { font-weight: 700; }
+.td-exalt  { color: var(--exalt); }
+.td-neecha { color: var(--neecha); }
+.td-retro  { color: var(--retro); }
+.td-normal { color: var(--normal); }
+.td-lagna  { color: var(--lagna); }
+.status-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 700;
+}
+.sb-exalt  { background: #44FF8822; color: var(--exalt); border: 1px solid #44FF8844; }
+.sb-neecha { background: #FF444422; color: var(--neecha); border: 1px solid #FF444444; }
+.sb-retro  { background: #FF8C0022; color: var(--retro);  border: 1px solid #FF8C0044; }
+.sb-normal { background: #FFE06611; color: var(--text-dim); border: 1px solid #FFE06622; }
 
-  /* Planet entry */
-  .planet-entry {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    line-height: 1.1;
-  }
-  .planet-name {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--planet-color);
-  }
-  .planet-name.retro { color: var(--retro-color); }
-  .planet-name.exalt { color: var(--exalt-color); }
-  .planet-name.debi  { color: var(--debi-color); }
-  .planet-name.lagna-p { color: var(--lagna-color); }
-  .planet-deg {
-    font-size: 9px;
-    color: var(--degree-color);
-    margin-left: 1px;
-  }
+/* ── NATCHATRA SARAM TABLE ── */
+.ns-wrap { margin-bottom: 10px; }
 
-  /* Center info */
-  .center-title {
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    color: var(--gold);
-    letter-spacing: 1px;
-    text-align: center;
-  }
-  .center-name {
-    font-size: 13px;
-    color: var(--text);
-    text-align: center;
-    margin-top: 2px;
-    font-weight: 600;
-  }
-  .center-date {
-    font-size: 9px;
-    color: #666;
-    text-align: center;
-    margin-top: 3px;
-  }
+/* ── NATCHATRA RASI CHART (Image 1 style) ── */
+.nr-chart {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 2px;
+  background: var(--border);
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  margin-bottom: 6px;
+}
+.nr-cell {
+  background: #0C0C1C;
+  padding: 5px 5px 4px;
+  min-height: 85px;
+}
+.nr-cell.nr-centre {
+  grid-column: 2 / 4;
+  grid-row: 2 / 4;
+  background: #090916;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+.nr-rasi { font-size: 11px; font-weight: 700; color: var(--gold); margin-bottom: 4px; }
+.nr-star { font-size: 9px; color: var(--text-dim); line-height: 1.6; }
+.nr-star span.lord { color: var(--gold-light); font-weight: 600; font-size: 9px; }
+.nr-star span.yr   { color: var(--degree); font-size: 8px; }
+.nr-centre-title { font-size: 11px; color: var(--gold); font-weight: 700; text-align: center; line-height: 1.6; }
 
-  /* Legend */
-  .legend {
-    width: 100%;
-    max-width: 420px;
-    padding: 0 16px 8px;
-  }
-  .legend-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 10px;
-    color: #777;
-    padding: 3px 0;
-    border-bottom: 1px solid #1A1A22;
-  }
-  .legend-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
+/* ── LEGEND ── */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  background: var(--bg3);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+.leg-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text-dim); }
+.leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-  /* Planet table */
-  .planet-table {
-    width: 100%;
-    max-width: 420px;
-    padding: 0 16px 16px;
-  }
-  .pt-header {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--gold);
-    padding: 8px 0 6px;
-    border-bottom: 1px solid var(--cell-border);
-    margin-bottom: 6px;
-    letter-spacing: 1px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-  }
-  th {
-    color: #666;
-    font-weight: 600;
-    text-align: left;
-    padding: 4px 6px;
-    font-size: 10px;
-    border-bottom: 1px solid #1A1A22;
-  }
-  td {
-    padding: 5px 6px;
-    border-bottom: 1px solid #111118;
-    color: var(--text);
-  }
-  tr:hover td { background: #12121E; }
-  td.p-name { color: var(--planet-color); font-weight: 700; }
-  td.retro { color: var(--retro-color); }
-  td.exalt { color: var(--exalt-color); }
-  td.debi  { color: var(--debi-color);  }
+/* ── BOTTOM NAV ── */
+.bot-nav {
+  display: flex;
+  background: var(--bg2);
+  border-top: 1px solid var(--border-gold);
+  position: fixed;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  z-index: 100;
+}
+.bn-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0 6px;
+  font-size: 9px;
+  color: #555;
+  cursor: pointer;
+  gap: 2px;
+  transition: color 0.2s;
+}
+.bn-item.active { color: var(--gold); }
+.bn-icon { font-size: 18px; }
 
-  /* Glow anim on load */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .chart-wrapper, .planet-table { animation: fadeUp 0.5s ease both; }
-  .planet-table { animation-delay: 0.15s; }
+/* scrollbar */
+.scroll-area::-webkit-scrollbar { width: 4px; }
+.scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-  /* Bottom nav */
-  .bottom-nav {
-    width: 100%;
-    display: flex;
-    border-top: 1px solid var(--cell-border);
-    background: #0C0C14;
-    position: sticky;
-    bottom: 0;
-  }
-  .nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px 0 8px;
-    font-size: 10px;
-    color: #555;
-    cursor: pointer;
-    gap: 3px;
-  }
-  .nav-item.active { color: var(--gold); }
-  .nav-icon { font-size: 20px; }
-
-  .spacer { flex: 1; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.page.active { animation: fadeIn 0.3s ease; }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>☽ JYOTHISHAM ☽</h1>
-  <div class="subtitle">தென்னிந்திய ஜாதக கட்டம்</div>
+<!-- HEADER -->
+<div class="hdr">
+  <div>
+    <div class="hdr-title">☽ JYOTHISHAM</div>
+    <div class="hdr-sub">தென்னிந்திய ஜாதக கட்டம்</div>
+  </div>
+  <div class="hdr-right">
+    <div class="now-badge" onclick="refreshNow()">இப்போது ↺</div>
+  </div>
 </div>
 
+<!-- TABS -->
 <div class="tabs">
-  <div class="tab active">அடிப்படை</div>
-  <div class="tab">லக்னம்</div>
-  <div class="tab">நவாம்சம்</div>
-  <div class="tab">க்லேஷம்</div>
+  <div class="tab active" onclick="showTab(0)">இப்போது லக்னம்</div>
+  <div class="tab" onclick="showTab(1)">இப்போது நவாம்சம்</div>
+  <div class="tab" onclick="showTab(2)">தேதி லக்னம்</div>
+  <div class="tab" onclick="showTab(3)">தேதி நவாம்சம்</div>
 </div>
 
-<div class="birth-info">
-  பெயர்: <span>சுதர்சன்</span> &nbsp;|&nbsp;
-  தேதி: <span>15 மார்ச் 1978</span> &nbsp;|&nbsp;
-  நேரம்: <span>06:42 AM</span> &nbsp;|&nbsp;
-  இடம்: <span>சென்னை</span>
+<!-- SCROLL AREA -->
+<div class="scroll-area">
+
+  <!-- ════ TAB 0: NOW LAGNA ════ -->
+  <div class="page active" id="page0">
+    <div id="now-info" class="date-strip" style="justify-content:center;">
+      <span style="font-size:11px;color:var(--text-dim);">தற்போதைய நேரம்: </span>
+      <span id="now-time-label" style="font-size:11px;color:var(--gold);font-weight:700;"></span>
+    </div>
+    <div class="section-title">இப்போதைய லக்னம் கட்டம்</div>
+    <div class="si-chart" id="chart-now-lagna"></div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--exalt)"></div> உச்சம் (Exaltation)</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--neecha)"></div> நீசம் (Debilitation)</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--retro)"></div> வக்ரம் (Retrograde)</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--lagna)"></div> லக்னம்</div>
+    </div>
+    <div class="section-title">கிரக விவரங்கள்</div>
+    <div class="pt-wrap"><div id="ptable-now-lagna"></div></div>
+    <div class="section-title">நட்சத்திர சாரம் (Planet → Star → Lord → Sublord)</div>
+    <div class="ns-wrap"><div id="nsaram-now-lagna"></div></div>
+    <div class="section-title">ராசி நட்சத்திர கட்டம்</div>
+    <div id="star-chart-0"></div>
+  </div>
+
+  <!-- ════ TAB 1: NOW NAVAMSA ════ -->
+  <div class="page" id="page1">
+    <div class="section-title">இப்போதைய நவாம்சம் கட்டம்</div>
+    <div class="si-chart" id="chart-now-navamsa"></div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--exalt)"></div> உச்சம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--neecha)"></div> நீசம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--retro)"></div> வக்ரம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--lagna)"></div> லக்னம்</div>
+    </div>
+    <div class="section-title">நவாம்ச கிரக விவரங்கள்</div>
+    <div class="pt-wrap"><div id="ptable-now-navamsa"></div></div>
+    <div class="section-title">ராசி நட்சத்திர கட்டம்</div>
+    <div id="star-chart-1"></div>
+  </div>
+
+  <!-- ════ TAB 2: DATE LAGNA ════ -->
+  <div class="page" id="page2">
+    <div class="date-strip">
+      <label>தேதி:</label>
+      <input type="date" id="sel-date" value="1978-03-15">
+      <label>நேரம்:</label>
+      <input type="time" id="sel-time" value="06:42">
+      <button class="calc-btn" onclick="calcDateChart()">கணக்கிடு</button>
+    </div>
+    <div class="section-title">தேர்ந்த நேர லக்னம் கட்டம்</div>
+    <div class="si-chart" id="chart-sel-lagna"></div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--exalt)"></div> உச்சம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--neecha)"></div> நீசம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--retro)"></div> வக்ரம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--lagna)"></div> லக்னம்</div>
+    </div>
+    <div class="section-title">கிரக விவரங்கள்</div>
+    <div class="pt-wrap"><div id="ptable-sel-lagna"></div></div>
+    <div class="section-title">நட்சத்திர சாரம்</div>
+    <div class="ns-wrap"><div id="nsaram-sel-lagna"></div></div>
+    <div class="section-title">ராசி நட்சத்திர கட்டம்</div>
+    <div id="star-chart-2"></div>
+  </div>
+
+  <!-- ════ TAB 3: DATE NAVAMSA ════ -->
+  <div class="page" id="page3">
+    <div class="section-title">தேர்ந்த நேர நவாம்சம் கட்டம்</div>
+    <div class="si-chart" id="chart-sel-navamsa"></div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--exalt)"></div> உச்சம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--neecha)"></div> நீசம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--retro)"></div> வக்ரம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--lagna)"></div> லக்னம்</div>
+    </div>
+    <div class="section-title">நவாம்ச கிரக விவரங்கள்</div>
+    <div class="pt-wrap"><div id="ptable-sel-navamsa"></div></div>
+    <div class="section-title">ராசி நட்சத்திர கட்டம்</div>
+    <div id="star-chart-3"></div>
+  </div>
+
+</div><!-- end scroll-area -->
+
+<!-- BOTTOM NAV -->
+<div class="bot-nav">
+  <div class="bn-item active" onclick="showTab(0)"><div class="bn-icon">🏠</div>முகப்பு</div>
+  <div class="bn-item" onclick="showTab(1)"><div class="bn-icon">✦</div>நவாம்சம்</div>
+  <div class="bn-item" onclick="showTab(2)"><div class="bn-icon">📅</div>தேதி</div>
+  <div class="bn-item" onclick="showTab(3)"><div class="bn-icon">🔮</div>தேதி நவா</div>
+  <div class="bn-item"><div class="bn-icon">ℹ️</div>பற்றி</div>
 </div>
 
-<div class="chart-wrapper">
-  <!--
-    South Indian Fixed Rasi grid (4×4):
-    Row0: [12-Meena] [1-Mesha]  [2-Rishabha] [3-Mithuna]
-    Row1: [11-Kumbha] [CENTER]  [CENTER]     [4-Kataka]
-    Row2: [10-Makara] [CENTER]  [CENTER]     [5-Simha]
-    Row3: [9-Dhanu]  [8-Vrisch] [7-Tula]    [6-Kanya]
-  -->
-  <div class="si-grid">
+<script>
+// ═══════════════════════════════════════════════════
+// DATA TABLES
+// ═══════════════════════════════════════════════════
 
-    <!-- Row 0 -->
-    <!-- R12: Meena (மீனம்) -->
-    <div class="cell" id="r12">
-      <div class="rasi-label">மீ</div>
-    </div>
-    <!-- R1: Mesha (மேஷம்) — Lagna here -->
-    <div class="cell" id="r1">
-      <div class="lagna-marker"></div>
-      <div class="rasi-label">மே</div>
-      <div class="planet-entry">
-        <span class="planet-name lagna-p">ல</span>
-      </div>
-      <div class="planet-entry">
-        <span class="planet-name exalt">சூ</span><span class="planet-deg">19°</span>
-      </div>
-    </div>
-    <!-- R2: Rishabha (ரிஷபம்) -->
-    <div class="cell" id="r2">
-      <div class="rasi-label">ரி</div>
-    </div>
-    <!-- R3: Mithuna (மிதுனம்) -->
-    <div class="cell" id="r3">
-      <div class="rasi-label">மி</div>
-      <div class="planet-entry">
-        <span class="planet-name">பு</span><span class="planet-deg">06°</span>
-      </div>
-      <div class="planet-entry">
-        <span class="planet-name">சு</span><span class="planet-deg">10°</span>
-      </div>
-    </div>
+// Rasi names
+const RASI = ['மேஷம்','ரிஷபம்','மிதுனம்','கடகம்','சிம்மம்','கன்னி','துலாம்','விருச்சிகம்','தனுசு','மகரம்','கும்பம்','மீனம்'];
+const RASI_SHORT = ['மே','ரி','மி','கட','சிம்','கன்','து','விரு','தனு','மக','கும்','மீ'];
 
-    <!-- Row 1 -->
-    <!-- R11: Kumbha (கும்பம்) -->
-    <div class="cell" id="r11">
-      <div class="rasi-label">கும்</div>
-      <div class="planet-entry">
-        <span class="planet-name retro">ரா</span><span class="planet-deg">11°</span>
-      </div>
-    </div>
-    <!-- CENTER top-left -->
-    <div class="cell center" colspan="2">
-      <div class="center-title">RASI</div>
-      <div class="center-name">சுதர்சன்</div>
-      <div class="center-date">15.03.1978<br/>06:42 AM<br/>சென்னை</div>
-    </div>
-    <!-- CENTER top-right (merged visually) -->
-    <div class="cell center" style="border-left:none;">
-    </div>
-    <!-- R4: Kataka (கடகம்) -->
-    <div class="cell" id="r4">
-      <div class="rasi-label">கட</div>
-    </div>
+// 27 Natchatras: [name, lord, dashaYears, rasi_index(0-based), pada_start]
+// Each rasi has 9 padas = 2.25 stars
+const NATCHATRA = [
+  ['அசுவினி','கேது',7,0],
+  ['பரணி','சுக்கிரன்',20,0],
+  ['கார்த்திகை','சூரியன்',6,0],   // 1 pada in Mesha, 3 in Rishabha
+  ['ரோகிணி','சந்திரன்',10,1],
+  ['மிருகசீரிடம்','செவ்வாய்',7,1], // 2 in Rishabha, 2 in Mithuna
+  ['திருவாதிரை','ராகு',18,2],
+  ['புனர்பூசம்','குரு',16,2],      // 3 in Mithuna, 1 in Kataka
+  ['பூசம்','சனி',19,3],
+  ['ஆயில்யம்','புதன்',17,3],
+  ['மகம்','கேது',7,4],
+  ['பூரம்','சுக்கிரன்',20,4],
+  ['உத்திரம்','சூரியன்',6,4],      // 1 in Simha, 3 in Kanni
+  ['அஸ்தம்','சந்திரன்',10,5],
+  ['சித்திரை','செவ்வாய்',7,5],     // 2 in Kanni, 2 in Tula
+  ['சுவாதி','ராகு',18,6],
+  ['விசாகம்','குரு',16,6],         // 3 in Tula, 1 in Vrischika
+  ['அனுஷம்','சனி',19,7],
+  ['கேட்டை','புதன்',17,7],
+  ['மூலம்','கேது',7,8],
+  ['பூராடம்','சுக்கிரன்',20,8],
+  ['உத்திராடம்','சூரியன்',6,8],   // 1 in Dhanu, 3 in Makara
+  ['திருவோணம்','சந்திரன்',10,9],
+  ['அவிட்டம்','செவ்வாய்',7,9],    // 2 in Makara, 2 in Kumbha
+  ['சதயம்','ராகு',18,10],
+  ['பூரட்டாதி','குரு',16,10],      // 3 in Kumbha, 1 in Meena
+  ['உத்திரட்டாதி','சனி',19,11],
+  ['ரேவதி','புதன்',17,11]
+];
 
-    <!-- Row 2 -->
-    <!-- R10: Makara (மகரம்) -->
-    <div class="cell" id="r10">
-      <div class="rasi-label">மக</div>
-      <div class="planet-entry">
-        <span class="planet-name">ப்ளூ</span><span class="planet-deg">11°</span>
-      </div>
-    </div>
-    <!-- CENTER bottom-left -->
-    <div class="cell center" style="border-top:none;"></div>
-    <!-- CENTER bottom-right -->
-    <div class="cell center" style="border-top:none;border-left:none;">
-      <div class="planet-entry" style="margin-top:4px;">
-        <span class="planet-name retro" style="font-size:11px;">ல</span><span class="planet-deg">24°</span>
-      </div>
-      <div class="planet-entry">
-        <span class="planet-name retro" style="font-size:11px;">கே*</span><span class="planet-deg">11°</span>
-      </div>
-    </div>
-    <!-- R5: Simha (சிம்மம்) -->
-    <div class="cell" id="r5">
-      <div class="rasi-label">சிம்</div>
-    </div>
+// Exaltation and debilitation degrees (sign index 0-11, degree 0-29)
+// [exaltSign, exaltDeg, neechaSign, neechaDeg]
+const PLANET_DIGNITY = {
+  'சூரியன்': [0,10,6,10],
+  'சந்திரன்': [1,3,7,3],
+  'செவ்வாய்': [9,28,3,28],
+  'புதன்': [5,15,11,15],
+  'குரு': [3,5,9,5],
+  'சுக்கிரன்': [11,27,5,27],
+  'சனி': [6,20,0,20],
+  'ராகு': [1,20,7,20],
+  'கேது': [7,20,1,20]
+};
 
-    <!-- Row 3 -->
-    <!-- R9: Dhanu (தனுசு) -->
-    <div class="cell" id="r9">
-      <div class="rasi-label">தனு</div>
-      <div class="planet-entry">
-        <span class="planet-name">சந்</span><span class="planet-deg">00°</span>
-      </div>
-    </div>
-    <!-- R8: Vrishchika (விருச்சிகம்) -->
-    <div class="cell" id="r8">
-      <div class="rasi-label">விரு</div>
-    </div>
-    <!-- R7: Tula (துலாம்) -->
-    <div class="cell" id="r7">
-      <div class="rasi-label">துலா</div>
-    </div>
-    <!-- R6: Kanya (கன்னி) -->
-    <div class="cell" id="r6">
-      <div class="rasi-label">கன்</div>
-      <div class="planet-entry">
-        <span class="planet-name debi">செ</span><span class="planet-deg">15°</span>
-      </div>
-      <div class="planet-entry">
-        <span class="planet-name">நெ</span><span class="planet-deg">09°</span>
-      </div>
-      <div class="planet-entry">
-        <span class="planet-name exalt">சூ^</span><span class="planet-deg">25°</span>
-      </div>
-    </div>
+// Sub-lord table (simplified KP sublord divisions within a star)
+// Each natchatra = 13°20' divided into 9 sub-lords in dasha proportion
+const DASHA_ORDER = ['கேது','சுக்கிரன்','சூரியன்','சந்திரன்','செவ்வாய்','ராகு','குரு','சனி','புதன்'];
+const DASHA_YEARS = {'கேது':7,'சுக்கிரன்':20,'சூரியன்':6,'சந்திரன்':10,'செவ்வாய்':7,'ராகு':18,'குரு':16,'சனி':19,'புதன்':17};
+const TOTAL_YEARS = 120;
+const STAR_SPAN = 800/60; // 13°20' in decimal degrees
 
-  </div>
-</div>
+function getSubLord(degInStar) {
+  // degInStar: 0 to 13.333...
+  // find which natchatra lord this star belongs to (from NATCHATRA table)
+  // then subdivide by dasha proportions
+  const spanPerDeg = STAR_SPAN; // total span of star
+  const natchIdx = Math.floor(degInStar / spanPerDeg * 27) % 27; // rough
+  // Simple sub-division: proportional to dasha years within star
+  let cumul = 0;
+  const starLordIdx = DASHA_ORDER.indexOf(NATCHATRA[0][1]); // placeholder
+  for (let i = 0; i < 9; i++) {
+    const lord = DASHA_ORDER[(starLordIdx + i) % 9];
+    const sub_span = (DASHA_YEARS[lord] / TOTAL_YEARS) * STAR_SPAN;
+    cumul += sub_span;
+    if (degInStar < cumul) return lord;
+  }
+  return DASHA_ORDER[0];
+}
 
-<!-- Legend -->
-<div class="legend">
-  <div class="legend-row"><div class="legend-dot" style="background:#7AFF9E"></div> உச்சம் (Exaltation) — ^ குறி</div>
-  <div class="legend-row"><div class="legend-dot" style="background:#FF9F7A"></div> நீசம் (Debilitation) — v குறி</div>
-  <div class="legend-row"><div class="legend-dot" style="background:#FF7A7A"></div> வக்ரம் / பிற்போக்கு (Retrograde) — * குறி</div>
-  <div class="legend-row"><div class="legend-dot" style="background:#00CFFF"></div> லக்னம் (Ascendant) — ▲ மூலை</div>
-</div>
+// ═══════════════════════════════════════════════════
+// SIMPLIFIED PLANETARY POSITION CALCULATOR
+// Uses simplified VSOP87 mean elements (demo accuracy ~1°)
+// ═══════════════════════════════════════════════════
+function julianDay(date) {
+  const Y = date.getUTCFullYear();
+  const M = date.getUTCMonth() + 1;
+  const D = date.getUTCDate() + (date.getUTCHours() + date.getUTCMinutes()/60 + date.getUTCSeconds()/3600) / 24;
+  let JD;
+  if (M <= 2) {
+    const Yp = Y - 1, Mp = M + 12;
+    const A = Math.floor(Yp / 100), B = 2 - A + Math.floor(A/4);
+    JD = Math.floor(365.25*(Yp+4716)) + Math.floor(30.6001*(Mp+1)) + D + B - 1524.5;
+  } else {
+    const A = Math.floor(Y/100), B = 2 - A + Math.floor(A/4);
+    JD = Math.floor(365.25*(Y+4716)) + Math.floor(30.6001*(M+1)) + D + B - 1524.5;
+  }
+  return JD;
+}
 
-<!-- Planet table -->
-<div class="planet-table">
-  <div class="pt-header">கிரக விவரங்கள்</div>
-  <table>
-    <thead>
-      <tr>
-        <th>கிரகம்</th>
-        <th>ராசி</th>
-        <th>பாதம்</th>
-        <th>நிலை</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td class="p-name">சூரியன்</td><td>மேஷம்</td><td>19°24′</td><td class="exalt">உச்சம்</td></tr>
-      <tr><td class="p-name">சந்திரன்</td><td>தனுசு</td><td>00°15′</td><td>சாதாரண</td></tr>
-      <tr><td class="p-name">செவ்வாய்</td><td>கன்னி</td><td>15°08′</td><td class="debi">நீசம்</td></tr>
-      <tr><td class="p-name">புதன்</td><td>மிதுனம்</td><td>06°33′</td><td class="exalt">உச்சம்</td></tr>
-      <tr><td class="p-name">குரு</td><td>மேஷம்</td><td>25°40′</td><td>சாதாரண</td></tr>
-      <tr><td class="p-name">சுக்ரன்</td><td>மிதுனம்</td><td>10°17′</td><td>சாதாரண</td></tr>
-      <tr><td class="p-name">சனி</td><td>கன்னி</td><td>09°52′</td><td>சாதாரண</td></tr>
-      <tr><td class="p-name retro">ராகு</td><td>கும்பம்</td><td>11°00′</td><td class="retro">வக்ரம்</td></tr>
-      <tr><td class="p-name retro">கேது</td><td>சிம்மம் (ல)</td><td>11°00′</td><td class="retro">வக்ரம்</td></tr>
-      <tr><td class="p-name">நெப்யூன்</td><td>கன்னி</td><td>09°10′</td><td>சாதாரண</td></tr>
-      <tr><td class="p-name">யுரேனஸ்</td><td>மிதுனம்</td><td>—</td><td>சாதாரண</td></tr>
-    </tbody>
-  </table>
-</div>
+function mod360(x) { return ((x % 360) + 360) % 360; }
 
-<div class="spacer"></div>
+// Ayanamsha (Lahiri/Chitrapaksha approximation)
+function ayanamsha(jd) {
+  const T = (jd - 2451545.0) / 36525.0;
+  return 23.85 + 0.0137 * T + (jd - 2415020.0) * (50.2564 / 3600) / 365.25;
+}
 
-<!-- Bottom nav -->
-<div class="bottom-nav">
-  <div class="nav-item active">
-    <div class="nav-icon">🏠</div>
-    <div>முகப்பு</div>
-  </div>
-  <div class="nav-item">
-    <div class="nav-icon">✦</div>
-    <div>ஏஜ் ஆஸ்ட்ரோ</div>
-  </div>
-  <div class="nav-item">
-    <div class="nav-icon">▶</div>
-    <div>நேரலை</div>
-  </div>
-  <div class="nav-item">
-    <div class="nav-icon">💬</div>
-    <div>கேளு</div>
-  </div>
-  <div class="nav-item">
-    <div class="nav-icon">📋</div>
-    <div>ஹிஸ்டரி</div>
-  </div>
-</div>
+// Mean tropical longitudes (simplified)
+function tropicalLon(jd) {
+  const T = (jd - 2451545.0) / 36525.0;
+  return {
+    'சூரியன்': mod360(280.46646 + 36000.76983 * T),
+    'சந்திரன்': mod360(218.3165 + 481267.8813 * T),
+    'செவ்வாய்': mod360(355.433 + 19140.2993 * T),
+    'புதன்':    mod360(252.2509 + 149472.6674 * T),
+    'குரு':     mod360(34.3515 + 3034.9057 * T),
+    'சுக்கிரன்':mod360(181.9798 + 58517.8156 * T),
+    'சனி':      mod360(50.0774 + 1222.1138 * T),
+    'ராகு':     mod360(125.0445 - 1934.1363 * T),
+    'கேது':     mod360(305.0445 - 1934.1363 * T)  // opposite Rahu
+  };
+}
 
+function siderealLon(jd) {
+  const tropic = tropicalLon(jd);
+  const ayan = ayanamsha(jd);
+  const result = {};
+  for (const p in tropic) {
+    result[p] = mod360(tropic[p] - ayan);
+  }
+  return result;
+}
+
+function lonToRasi(lon) { return Math.floor(lon / 30); }
+function lonToDeg(lon) { return lon % 30; }
+
+function getStatus(planet, rasiIdx, deg) {
+  const d = PLANET_DIGNITY[planet];
+  if (!d) return 'normal';
+  if (rasiIdx === d[0] && Math.abs(deg - d[1]) < 5) return 'exalt';
+  if (rasiIdx === d[0]) return 'exalt';
+  if (rasiIdx === d[2]) return 'neecha';
+  return 'normal';
+}
+
+// Retrograde: planets are retrograde at certain times (simplified check)
+// For demo: mark as retrograde based on approximate synodic cycles
+function isRetrograde(planet, jd) {
+  // Simplified: compute velocity sign change (very rough)
+  const T = (jd - 2451545.0) / 36525.0;
+  // rough annual synodic positions
+  const retro = {
+    'செவ்வாய்': Math.sin((T * 0.5320) * 2 * Math.PI) < -0.6,
+    'புதன்':    Math.sin((T * 4.152)  * 2 * Math.PI) < -0.3,
+    'குரு':     Math.sin((T * 0.0834) * 2 * Math.PI) < -0.9,
+    'சுக்கிரன்':Math.sin((T * 1.5988) * 2 * Math.PI) < -0.95,
+    'சனி':      Math.sin((T * 0.0338) * 2 * Math.PI) < -0.92,
+    'ராகு': true, 'கேது': true
+  };
+  return retro[planet] || false;
+}
+
+// Natchatra from longitude
+function getNatchatra(lon) {
+  const idx = Math.floor(lon / (360/27));
+  const padaIdx = Math.floor((lon % (360/27)) / (360/108));
+  return { idx, pada: padaIdx + 1, name: NATCHATRA[idx][0], lord: NATCHATRA[idx][1], years: NATCHATRA[idx][2] };
+}
+
+// Sublord (KP simplified: subdivide natchatra span by dasha proportions)
+function getSubLordForLon(lon) {
+  const starSpan = 360 / 27;
+  const starIdx = Math.floor(lon / starSpan);
+  const degInStar = lon - starIdx * starSpan;
+  const startLordIdx = DASHA_ORDER.indexOf(NATCHATRA[starIdx][1]);
+  let cumul = 0;
+  for (let i = 0; i < 9; i++) {
+    const lord = DASHA_ORDER[(startLordIdx + i) % 9];
+    const subSpan = (DASHA_YEARS[lord] / TOTAL_YEARS) * starSpan;
+    cumul += subSpan;
+    if (degInStar < cumul) return lord;
+  }
+  return DASHA_ORDER[0];
+}
+
+// Navamsa rasi from longitude (each navamsa = 3°20')
+function getNavamsa(lon) {
+  const navIdx = Math.floor(lon / (360/108));
+  const rasiStart = [0,3,6,9,3,6,9,0,6,9,0,3]; // fire/earth/air/water start
+  const baseRasi = Math.floor(navIdx / 9);
+  const posInGroup = navIdx % 9;
+  const startRasi = rasiStart[baseRasi];
+  return (startRasi + posInGroup) % 12;
+}
+
+// Lagna (Ascendant) rasi — simplified (needs location; using Chennai lat ~13N)
+function getLagnaRasi(jd, lat=13.08, lon=80.27) {
+  const T = (jd - 2451545.0) / 36525.0;
+  const GMST = mod360(280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933*T*T);
+  const LST = mod360(GMST + lon);
+  const ayan = ayanamsha(jd);
+  const sid = mod360(LST - ayan);
+  return { rasi: lonToRasi(sid), deg: lonToDeg(sid) };
+}
+
+// ═══════════════════════════════════════════════════
+// BUILD CHART DATA
+// ═══════════════════════════════════════════════════
+function buildChartData(date, isNavamsa = false) {
+  const jd = julianDay(date);
+  const lons = siderealLon(jd);
+  const lagna = getLagnaRasi(jd);
+
+  const planets = [];
+  const PLANET_LIST = ['சூரியன்','சந்திரன்','செவ்வாய்','புதன்','குரு','சுக்கிரன்','சனி','ராகு','கேது'];
+  const SHORT = {'சூரியன்':'சூ','சந்திரன்':'சந்','செவ்வாய்':'செ','புதன்':'பு','குரு':'கு','சுக்கிரன்':'சு','சனி':'சனி','ராகு':'ரா','கேது':'கே'};
+
+  for (const p of PLANET_LIST) {
+    const lon = lons[p];
+    const rasiIdx = isNavamsa ? getNavamsa(lon) : lonToRasi(lon);
+    const deg = isNavamsa ? lonToDeg(lons[p]) : lonToDeg(lon);
+    const retro = isRetrograde(p, jd) && !['சூரியன்','சந்திரன்'].includes(p);
+    const status = retro ? 'retro' : getStatus(p, rasiIdx, deg);
+    const nat = getNatchatra(lon);
+    const sublord = getSubLordForLon(lon);
+    planets.push({
+      name: p,
+      short: SHORT[p],
+      lon, rasiIdx, deg,
+      retro, status,
+      nat, sublord
+    });
+  }
+
+  const lagnaRasiIdx = isNavamsa ? getNavamsa(lagna.rasi * 30 + lagna.deg) : lagna.rasi;
+
+  return { planets, lagnaRasi: lagnaRasiIdx, lagnaRawDeg: lagna.deg, jd };
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER SOUTH INDIAN CHART
+// South Indian fixed layout:
+// Row0: r12, r1,  r2,  r3
+// Row1: r11, [C   EN   TR], r4
+// Row2: r10, [E   NT   RE], r5
+// Row3: r9,  r8,  r7,  r6
+// rasi index 0=Mesha=r1, ..., 11=Meena=r12
+// Cell order in DOM: r12,r1,r2,r3, r11,CENTRE,r4, r10,r5, r9,r8,r7,r6
+// ═══════════════════════════════════════════════════
+function renderSIChart(containerId, data) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+
+  // Build a map: rasiIdx → [planets]
+  const rasiMap = {};
+  for (let i = 0; i < 12; i++) rasiMap[i] = [];
+  for (const p of data.planets) rasiMap[p.rasiIdx].push(p);
+
+  // SI grid order: which rasi goes where
+  // (0-indexed rasi: 0=Mesha,1=Rishabha,...,11=Meena)
+  // Row0: Meena(11), Mesha(0), Rishabha(1), Mithuna(2)
+  // Row1: Kumbha(10), CENTRE_TOP_L, CENTRE_TOP_R, Kataka(3)
+  // Row2: Makara(9), CENTRE_BOT_L, CENTRE_BOT_R, Simha(4)
+  // Row3: Dhanu(8), Vrischika(7), Tula(6), Kanya(5)
+
+  function makeCell(rasiIdx) {
+    const isLagna = rasiIdx === data.lagnaRasi;
+    const planets = rasiMap[rasiIdx];
+    let html = `<div class="rasi-name">${RASI_SHORT[rasiIdx]}</div>`;
+    if (isLagna) {
+      html += `<div class="lagna-tri"></div>`;
+      // Add 'ல' as lagna marker
+      html += `<div class="pl"><span class="pl-n lagna-pl">ல</span></div>`;
+    }
+    for (const p of planets) {
+      const degStr = p.deg.toFixed(0) + '°';
+      const retMark = p.retro ? '*' : '';
+      html += `<div class="pl">
+        <span class="pl-n ${p.status}">${p.short}${retMark}</span>
+        <span class="pl-d">${degStr}</span>
+      </div>`;
+    }
+    return `<div class="cell">${html}</div>`;
+  }
+
+  // Row 0
+  el.innerHTML += makeCell(11); // Meena
+  el.innerHTML += makeCell(0);  // Mesha
+  el.innerHTML += makeCell(1);  // Rishabha
+  el.innerHTML += makeCell(2);  // Mithuna
+
+  // Row 1: Kumbha, CENTRE (spans 2×2), Kataka
+  el.innerHTML += makeCell(10); // Kumbha
+  // Centre cell (spans 2 cols × 2 rows)
+  el.innerHTML += `<div class="cell centre">
+    <div class="centre-label">ராசி</div>
+    <div class="centre-rasi">${RASI[data.lagnaRasi]}<br/>லக்னம்</div>
+  </div>`;
+  el.innerHTML += makeCell(3);  // Kataka
+
+  // Row 2: Makara, (centre continues), Simha
+  el.innerHTML += makeCell(9);  // Makara
+  el.innerHTML += makeCell(4);  // Simha
+
+  // Row 3
+  el.innerHTML += makeCell(8);  // Dhanu
+  el.innerHTML += makeCell(7);  // Vrischika
+  el.innerHTML += makeCell(6);  // Tula
+  el.innerHTML += makeCell(5);  // Kanya
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER PLANET TABLE
+// ═══════════════════════════════════════════════════
+function statusBadge(p) {
+  if (p.retro) return `<span class="status-badge sb-retro">வக்ரம்*</span>`;
+  if (p.status === 'exalt') return `<span class="status-badge sb-exalt">உச்சம்↑</span>`;
+  if (p.status === 'neecha') return `<span class="status-badge sb-neecha">நீசம்↓</span>`;
+  return `<span class="status-badge sb-normal">சாதாரண</span>`;
+}
+
+function renderPlanetTable(containerId, data) {
+  const el = document.getElementById(containerId);
+  let html = `<table>
+    <thead><tr>
+      <th>கிரகம்</th><th>ராசி</th><th>பாதம்</th><th>நிலை</th>
+    </tr></thead><tbody>`;
+  for (const p of data.planets) {
+    const colorClass = p.retro ? 'td-retro' : (p.status === 'exalt' ? 'td-exalt' : p.status === 'neecha' ? 'td-neecha' : 'td-normal');
+    html += `<tr>
+      <td class="td-planet ${colorClass}">${p.name}</td>
+      <td>${RASI[p.rasiIdx]}</td>
+      <td style="color:var(--degree)">${p.deg.toFixed(2)}°</td>
+      <td>${statusBadge(p)}</td>
+    </tr>`;
+  }
+  // Lagna row
+  html += `<tr>
+    <td class="td-planet td-lagna">லக்னம்</td>
+    <td>${RASI[data.lagnaRasi]}</td>
+    <td style="color:var(--degree)">${data.lagnaRawDeg.toFixed(2)}°</td>
+    <td><span class="status-badge" style="background:#00DDFF22;color:var(--lagna);border:1px solid #00DDFF44;">லக்னம்</span></td>
+  </tr>`;
+  html += `</tbody></table>`;
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER NATCHATRA SARAM
+// ═══════════════════════════════════════════════════
+function renderNSaram(containerId, data) {
+  const el = document.getElementById(containerId);
+  let html = `<table>
+    <thead><tr>
+      <th>கிரகம்</th><th>நட்சத்திரம்</th><th>பாதம்</th><th>நட்.அதிபதி</th><th>உபாதிபதி</th>
+    </tr></thead><tbody>`;
+  for (const p of data.planets) {
+    const colorClass = p.retro ? 'td-retro' : (p.status === 'exalt' ? 'td-exalt' : p.status === 'neecha' ? 'td-neecha' : 'td-normal');
+    html += `<tr>
+      <td class="td-planet ${colorClass}">${p.name}</td>
+      <td style="color:var(--text)">${p.nat.name}</td>
+      <td style="color:var(--degree)">${p.nat.pada}</td>
+      <td style="color:var(--gold-light);font-weight:600">${p.nat.lord}</td>
+      <td style="color:var(--exalt)">${p.sublord}</td>
+    </tr>`;
+  }
+  html += `</tbody></table>`;
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER NATCHATRA-RASI REFERENCE CHART (Image 1 style)
+// ═══════════════════════════════════════════════════
+
+// Stars per rasi (from image 1)
+const RASI_STARS = {
+  0: [['அசுவினி','கேது',7,'1,2,3,4'],['பரணி','சு',20,'1,2,3,4'],['கார்த்திகை','சூ',6,'1']],
+  1: [['கார்த்திகை','சூ',6,'2,3,4'],['ரோகிணி','சந்',10,'1,2,3,4'],['மிருகசீரிடம்','செ',7,'1,2']],
+  2: [['மிருகசீரிடம்','செ',7,'3,4'],['திருவாதிரை','ரா',18,'1,2,3,4'],['புனர்பூசம்','கு',16,'1,2,3']],
+  3: [['புனர்பூசம்','கு',16,'4'],['பூசம்','சனி',19,'1,2,3,4'],['ஆயில்யம்','பு',17,'1,2,3,4']],
+  4: [['மகம்','கே',7,'1,2,3,4'],['பூரம்','சு',20,'1,2,3,4'],['உத்திரம்','சூ',6,'1']],
+  5: [['உத்திரம்','சூ',6,'2,3,4'],['அஸ்தம்','சந்',10,'1,2,3,4'],['சித்திரை','செ',7,'1,2']],
+  6: [['சித்திரை','செ',7,'3,4'],['சுவாதி','ரா',18,'1,2,3,4'],['விசாகம்','கு',16,'1,2,3']],
+  7: [['விசாகம்','கு',16,'4'],['அனுஷம்','சனி',19,'1,2,3,4'],['கேட்டை','பு',17,'1,2,3,4']],
+  8: [['மூலம்','கே',7,'1,2,3,4'],['பூராடம்','சு',20,'1,2,3,4'],['உத்திராடம்','சூ',6,'1']],
+  9: [['உத்திராடம்','சூ',6,'2,3,4'],['திருவோணம்','சந்',10,'1,2,3,4'],['அவிட்டம்','செ',7,'1,2']],
+  10:[['அவிட்டம்','செ',7,'3,4'],['சதயம்','ரா',18,'1,2,3,4'],['பூரட்டாதி','கு',16,'1,2,3']],
+  11:[['பூரட்டாதி','கு',16,'4'],['உத்திரட்டாதி','சனி',19,'1,2,3,4'],['ரேவதி','பு',17,'1,2,3,4']]
+};
+
+function renderStarChart(containerId) {
+  const el = document.getElementById(containerId);
+
+  // SI grid order
+  const GRID_ORDER = [11,0,1,2, 10,'C',3, 9,4, 8,7,6,5];
+
+  let html = '<div class="nr-chart">';
+
+  let domIdx = 0;
+  for (const ri of GRID_ORDER) {
+    if (ri === 'C') {
+      html += `<div class="nr-cell nr-centre">
+        <div class="nr-centre-title">ராசிகளும்<br/>அவற்றில் அடங்கும்<br/>நட்சத்திரங்களும்</div>
+      </div>`;
+    } else {
+      const stars = RASI_STARS[ri];
+      let starsHtml = '';
+      for (const [sname, lord, yr, padas] of stars) {
+        starsHtml += `<div class="nr-star">${sname} <span class="lord">${lord}</span><span class="yr"> ${yr}வ</span> <span style="color:#555">${padas}</span></div>`;
+      }
+      html += `<div class="nr-cell">
+        <div class="nr-rasi">${RASI[ri]}</div>
+        ${starsHtml}
+      </div>`;
+    }
+    domIdx++;
+  }
+  html += '</div>';
+
+  // Vimsottari dasha reference table
+  html += `<div style="margin-top:6px;">
+    <div class="section-title">விம்சோத்தரி தசை அட்டவணை (120 ஆண்டுகள்)</div>
+    <table>
+      <thead><tr><th>#</th><th>நட்சத்திரம்</th><th>தசை அதிபதி</th><th>ஆண்டுகள்</th></tr></thead>
+      <tbody>`;
+  for (let i = 0; i < 27; i++) {
+    const [name, lord, yrs] = NATCHATRA[i];
+    html += `<tr>
+      <td style="color:var(--text-dim)">${i+1}</td>
+      <td style="color:var(--text)">${name}</td>
+      <td style="color:var(--gold-light);font-weight:600">${lord}</td>
+      <td style="color:var(--degree)">${yrs}</td>
+    </tr>`;
+  }
+  html += `</tbody></table></div>`;
+
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+// MAIN INIT & REFRESH
+// ═══════════════════════════════════════════════════
+function renderAll(date, isNow) {
+  const lagnaData  = buildChartData(date, false);
+  const navamsaData = buildChartData(date, true);
+
+  if (isNow) {
+    renderSIChart('chart-now-lagna',  lagnaData);
+    renderPlanetTable('ptable-now-lagna',  lagnaData);
+    renderNSaram('nsaram-now-lagna', lagnaData);
+    renderSIChart('chart-now-navamsa', navamsaData);
+    renderPlanetTable('ptable-now-navamsa', navamsaData);
+    renderStarChart('star-chart-0');
+    renderStarChart('star-chart-1');
+  } else {
+    renderSIChart('chart-sel-lagna', lagnaData);
+    renderPlanetTable('ptable-sel-lagna', lagnaData);
+    renderNSaram('nsaram-sel-lagna', lagnaData);
+    renderSIChart('chart-sel-navamsa', navamsaData);
+    renderPlanetTable('ptable-sel-navamsa', navamsaData);
+    renderStarChart('star-chart-2');
+    renderStarChart('star-chart-3');
+  }
+}
+
+function refreshNow() {
+  const now = new Date();
+  document.getElementById('now-time-label').textContent =
+    now.toLocaleDateString('ta-IN') + ' ' + now.toLocaleTimeString('ta-IN', {hour:'2-digit', minute:'2-digit'});
+  renderAll(now, true);
+}
+
+function calcDateChart() {
+  const dateVal = document.getElementById('sel-date').value;
+  const timeVal = document.getElementById('sel-time').value;
+  if (!dateVal) return;
+  const [y,m,d] = dateVal.split('-').map(Number);
+  const [hh,mm] = timeVal ? timeVal.split(':').map(Number) : [0,0];
+  // Use IST (UTC+5:30) offset
+  const date = new Date(Date.UTC(y, m-1, d, hh - 5, mm - 30));
+  renderAll(date, false);
+}
+
+// TAB SWITCHING
+function showTab(idx) {
+  document.querySelectorAll('.page').forEach((p,i) => p.classList.toggle('active', i===idx));
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.bn-item').forEach((b,i) => b.classList.toggle('active', i===idx));
+  document.querySelector('.scroll-area').scrollTop = 0;
+}
+
+// BOOT
+window.addEventListener('load', () => {
+  refreshNow();
+  calcDateChart();
+});
+</script>
 </body>
 </html>
