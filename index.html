@@ -527,8 +527,27 @@ tbody tr:hover td { background: #13132A; }
     <div class="date-strip">
       <label>தேதி:</label>
       <input type="date" id="sel-date" value="1978-03-15">
-      <label>நேரம்:</label>
+      <label>நேரம்: (IST)</label>
       <input type="time" id="sel-time" value="06:42">
+      <label>இடம்:</label>
+      <select id="sel-place" style="flex:1;min-width:120px;">
+        <option value="13.0827,80.2707">சென்னை</option>
+        <option value="13.0827,80.2707">Chennai</option>
+        <option value="12.9716,77.5946">Bengaluru</option>
+        <option value="19.0760,72.8777">Mumbai</option>
+        <option value="28.6139,77.2090">Delhi</option>
+        <option value="17.3850,78.4867">Hyderabad</option>
+        <option value="22.5726,88.3639">Kolkata</option>
+        <option value="9.9252,78.1198">Madurai</option>
+        <option value="11.0168,76.9558">Coimbatore</option>
+        <option value="10.7905,78.7047">Tiruchirappalli</option>
+        <option value="8.7139,77.7567">Nagercoil</option>
+        <option value="custom">தனிப்பயன்...</option>
+      </select>
+      <div id="custom-loc" style="display:none;width:100%;display:flex;gap:6px;flex-wrap:wrap;">
+        <input type="number" id="sel-lat" placeholder="Lat (e.g. 13.08)" step="0.001" style="flex:1;min-width:100px;">
+        <input type="number" id="sel-lon" placeholder="Lon (e.g. 80.27)" step="0.001" style="flex:1;min-width:100px;">
+      </div>
       <button class="calc-btn" onclick="calcDateChart()">கணக்கிடு</button>
     </div>
     <div class="section-title">தேர்ந்த நேர லக்னம் கட்டம்</div>
@@ -793,23 +812,49 @@ function getNavamsa(lon) {
   return (startRasi + posInGroup) % 12;
 }
 
-// Lagna (Ascendant) rasi — simplified (needs location; using Chennai lat ~13N)
-function getLagnaRasi(jd, lat=13.08, lon=80.27) {
+// Lagna (Ascendant) — proper formula using RAMC + obliquity
+// Chennai: lat = 13.0827° N, lon = 80.2707° E
+function getLagnaRasi(jd, lat = 13.0827, geoLon = 80.2707) {
+  // Julian centuries from J2000.0
   const T = (jd - 2451545.0) / 36525.0;
-  const GMST = mod360(280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933*T*T);
-  const LST = mod360(GMST + lon);
+
+  // Greenwich Mean Sidereal Time in degrees
+  const GMST = mod360(
+    280.46061837
+    + 360.98564736629 * (jd - 2451545.0)
+    + 0.000387933 * T * T
+    - (T * T * T) / 38710000.0
+  );
+
+  // Local Sidereal Time
+  const LST = mod360(GMST + geoLon);
+  const RAMC = LST; // Right Ascension of Midheaven Cusp = LST
+
+  // Obliquity of ecliptic
+  const eps = 23.439291111 - 0.013004167 * T - 0.0000001639 * T * T + 0.0000005036 * T * T * T;
+  const epsRad = eps * Math.PI / 180;
+  const latRad = lat * Math.PI / 180;
+  const ramcRad = RAMC * Math.PI / 180;
+
+  // Ascendant formula (exact)
+  const y_asc = -Math.cos(ramcRad);
+  const x_asc = Math.sin(ramcRad) * Math.cos(epsRad) + Math.tan(latRad) * Math.sin(epsRad);
+  let tropAsc = mod360(Math.atan2(y_asc, x_asc) * 180 / Math.PI);
+
+  // Convert tropical ascendant to sidereal (subtract ayanamsha)
   const ayan = ayanamsha(jd);
-  const sid = mod360(LST - ayan);
-  return { rasi: lonToRasi(sid), deg: lonToDeg(sid) };
+  const sidAsc = mod360(tropAsc - ayan);
+
+  return { rasi: lonToRasi(sidAsc), deg: lonToDeg(sidAsc), sidAsc };
 }
 
 // ═══════════════════════════════════════════════════
 // BUILD CHART DATA
 // ═══════════════════════════════════════════════════
-function buildChartData(date, isNavamsa = false) {
+function buildChartData(date, isNavamsa = false, lat = 13.0827, geoLon = 80.2707) {
   const jd = julianDay(date);
   const lons = siderealLon(jd);
-  const lagna = getLagnaRasi(jd);
+  const lagna = getLagnaRasi(jd, lat, geoLon);
 
   const planets = [];
   const PLANET_LIST = ['சூரியன்','சந்திரன்','செவ்வாய்','புதன்','குரு','சுக்கிரன்','சனி','ராகு','கேது'];
@@ -1043,9 +1088,9 @@ function renderStarChart(containerId) {
 // ═══════════════════════════════════════════════════
 // MAIN INIT & REFRESH
 // ═══════════════════════════════════════════════════
-function renderAll(date, isNow) {
-  const lagnaData  = buildChartData(date, false);
-  const navamsaData = buildChartData(date, true);
+function renderAll(date, isNow, lat = 13.0827, geoLon = 80.2707) {
+  const lagnaData   = buildChartData(date, false, lat, geoLon);
+  const navamsaData = buildChartData(date, true,  lat, geoLon);
 
   if (isNow) {
     renderSIChart('chart-now-lagna',  lagnaData);
@@ -1066,10 +1111,49 @@ function renderAll(date, isNow) {
   }
 }
 
+// ─── Location helper ───────────────────────────────
+function getSelectedLatLon() {
+  const sel = document.getElementById('sel-place');
+  if (sel && sel.value === 'custom') {
+    const lat = parseFloat(document.getElementById('sel-lat').value) || 13.0827;
+    const lon = parseFloat(document.getElementById('sel-lon').value) || 80.2707;
+    return { lat, lon };
+  }
+  if (sel && sel.value) {
+    const [lat, lon] = sel.value.split(',').map(Number);
+    return { lat, lon };
+  }
+  return { lat: 13.0827, lon: 80.2707 }; // default Chennai
+}
+
+// Show/hide custom lat-lon inputs
+document.addEventListener('DOMContentLoaded', () => {
+  const sel = document.getElementById('sel-place');
+  if (sel) sel.addEventListener('change', () => {
+    const cust = document.getElementById('custom-loc');
+    if (cust) cust.style.display = sel.value === 'custom' ? 'flex' : 'none';
+  });
+});
+
+// ─── IST helpers ───────────────────────────────────
+// julianDay() reads UTC fields from the Date object.
+// So we always convert IST input → UTC before passing.
+// IST = UTC + 5h 30m  →  UTC = IST - 5h 30m = IST - 330 minutes
+
+function istToUtcDate(y, m, d, hh, mm) {
+  const istMinutes = hh * 60 + mm;
+  const utcMinutes = istMinutes - 330;
+  const utcDate = new Date(Date.UTC(y, m - 1, d));
+  utcDate.setUTCMinutes(utcDate.getUTCMinutes() + utcMinutes);
+  return utcDate;
+}
+
 function refreshNow() {
   const now = new Date();
   document.getElementById('now-time-label').textContent =
-    now.toLocaleDateString('ta-IN') + ' ' + now.toLocaleTimeString('ta-IN', {hour:'2-digit', minute:'2-digit'});
+    now.toLocaleDateString('ta-IN') + ' ' +
+    now.toLocaleTimeString('ta-IN', {hour:'2-digit', minute:'2-digit'});
+  // new Date() already carries true UTC internally — julianDay uses getUTC* so it's correct
   renderAll(now, true);
 }
 
@@ -1077,11 +1161,11 @@ function calcDateChart() {
   const dateVal = document.getElementById('sel-date').value;
   const timeVal = document.getElementById('sel-time').value;
   if (!dateVal) return;
-  const [y,m,d] = dateVal.split('-').map(Number);
-  const [hh,mm] = timeVal ? timeVal.split(':').map(Number) : [0,0];
-  // Use IST (UTC+5:30) offset
-  const date = new Date(Date.UTC(y, m-1, d, hh - 5, mm - 30));
-  renderAll(date, false);
+  const [y, m, d] = dateVal.split('-').map(Number);
+  const [hh, mm]  = timeVal ? timeVal.split(':').map(Number) : [0, 0];
+  const date = istToUtcDate(y, m, d, hh, mm);
+  const { lat, lon } = getSelectedLatLon();
+  renderAll(date, false, lat, lon);
 }
 
 // TAB SWITCHING
