@@ -801,102 +801,98 @@ function ayanamsha(jd) {
 }
 
 // ═══════════════════════════════════════════════════
-// TROPICAL LONGITUDES — with Equation of Center corrections
-// Accuracy: Sun/Venus ~0.01°, Jupiter ~0.1°, Moon ~0.1°,
-//           Saturn ~0.3°, Mars ~0.5°, Mercury ~0.5°
-// Ref: Meeus "Astronomical Algorithms" Ch.25-33
+// GEOCENTRIC PLANETARY LONGITUDES
+// Method: Kepler orbital solution → heliocentric →
+//         subtract Earth vector → geocentric ecliptic
+// Orbital elements: Meeus Table 31.a (J2000 epoch)
+// Accuracy: ~0.1° for most planets
 // ═══════════════════════════════════════════════════
 function tropicalLon(jd) {
-  const T = (jd - 2451545.0) / 36525.0;
-  const R = Math.PI / 180;
+  const T  = (jd - 2451545.0) / 36525.0;
+  const Rd = Math.PI / 180;
 
-  // ── SUN (Meeus Ch.25, accurate ~0.01°) ──
-  const L0sun = mod360(280.46646  + 36000.76983 * T + 0.0003032 * T * T);
-  const Msun  = mod360(357.52911  + 35999.05029 * T - 0.0001537 * T * T) * R;
-  const Csun  = (1.914602 - 0.004817*T - 0.000014*T*T) * Math.sin(Msun)
-              + (0.019993 - 0.000101*T) * Math.sin(2*Msun)
-              + 0.000289 * Math.sin(3*Msun);
-  const sun = mod360(L0sun + Csun);
+  // Solve Kepler's equation E = M + e·sin(E)
+  function kepler(M_deg, e) {
+    let E = M_deg * Rd;
+    for (let i = 0; i < 15; i++) E = M_deg * Rd + e * Math.sin(E);
+    return 2 * Math.atan(Math.sqrt((1 + e) / (1 - e)) * Math.tan(E / 2)) / Rd;
+  }
 
-  // ── MOON (Meeus Ch.47 truncated, accurate ~0.1°) ──
-  const Lmoon  = mod360(218.3165  + 481267.8813  * T);
-  const Dmoon  = mod360(297.85036 + 445267.11148 * T - 0.0019142*T*T) * R;
-  const Mmoon  = mod360(357.52772 + 35999.05034  * T - 0.0001603*T*T) * R;
-  const Mpmoon = mod360(134.96298 + 477198.86742 * T + 0.0086972*T*T) * R;
-  const Fmoon  = mod360(93.27191  + 483202.01753 * T - 0.0036825*T*T) * R;
-  const dLmoon = (6288774*Math.sin(Mpmoon)
-               + 1274027*Math.sin(2*Dmoon - Mpmoon)
-               + 658314 *Math.sin(2*Dmoon)
-               + 213618 *Math.sin(2*Mpmoon)
-               - 185116 *Math.sin(Mmoon)
-               - 114332 *Math.sin(2*Fmoon)
-               + 58793  *Math.sin(2*Dmoon - 2*Mpmoon)
-               + 57066  *Math.sin(2*Dmoon - Mmoon - Mpmoon)
-               + 53322  *Math.sin(2*Dmoon + Mpmoon)
-               + 45758  *Math.sin(2*Dmoon - Mmoon)
-               - 40923  *Math.sin(Mmoon - Mpmoon)
-               - 34720  *Math.sin(Dmoon)
-               - 30383  *Math.sin(Mmoon + Mpmoon)
-               + 15327  *Math.sin(2*Dmoon - 2*Fmoon)
-               - 12528  *Math.sin(Mpmoon + 2*Fmoon)
-               + 10980  *Math.sin(Mpmoon - 2*Fmoon)) / 1000000;
-  const moon = mod360(Lmoon + dLmoon);
+  // Heliocentric lon + radius from orbital elements
+  // el = { L0, Ld (mean lon rate/century), e0, Ombar0, Ombar_d (lon perihelion) }
+  function getHelio(el) {
+    const L    = mod360(el.L0 + el.Ld * T);
+    const ombar = mod360(el.Ombar0 + el.Ombar_d * T); // lon of perihelion
+    const M    = mod360(L - ombar);                    // mean anomaly
+    const v    = kepler(M, el.e0);                     // true anomaly
+    const r    = el.a * (1 - el.e0 * el.e0) / (1 + el.e0 * Math.cos(v * Rd));
+    return { lon: mod360(v + ombar), r };
+  }
 
-  // ── MERCURY (Meeus, equation of center, accurate ~0.5°) ──
-  const L0mer = mod360(252.2509 + 149472.6674 * T);
-  const Mmer  = mod360(174.7948 + 149472.5150 * T) * R;
-  const Cmer  = (23.4400 - 0.00042*T)*Math.sin(Mmer)
-              + 2.9818*Math.sin(2*Mmer)
-              + 0.5255*Math.sin(3*Mmer)
-              + 0.1058*Math.sin(4*Mmer)
-              + 0.0219*Math.sin(5*Mmer);
-  const mercury = mod360(L0mer + Cmer);
+  // Orbital elements (Meeus Table 31.a)
+  const EL = {
+    Earth:   {L0:100.466457, Ld:35999.3728565,  a:1.000000, e0:0.01670862, Ombar0:102.937348, Ombar_d:0.3225557},
+    Mercury: {L0:252.250906, Ld:149472.6746358, a:0.387098, e0:0.20563175, Ombar0:77.456119,  Ombar_d:0.1588643},
+    Venus:   {L0:181.979801, Ld:58517.8156760,  a:0.723330, e0:0.00677188, Ombar0:131.563703, Ombar_d:0.0048746},
+    Mars:    {L0:355.433275, Ld:19140.2993313,  a:1.523679, e0:0.09340062, Ombar0:336.060234, Ombar_d:0.4439016},
+    Jupiter: {L0:34.351519,  Ld:3034.9056606,   a:5.202603, e0:0.04849485, Ombar0:14.331309,  Ombar_d:0.2155209},
+    Saturn:  {L0:50.077444,  Ld:1222.1138488,   a:9.554909, e0:0.05550825, Ombar0:93.056787,  Ombar_d:0.5665496},
+  };
 
-  // ── VENUS (Meeus, accurate ~0.1°) ──
-  const L0ven = mod360(181.9798 + 58517.8156 * T);
-  const Mven  = mod360(212.3500 + 58517.8000 * T) * R;
-  const Cven  = (0.7758 - 0.0045*T)*Math.sin(Mven) + 0.0033*Math.sin(2*Mven);
-  const venus = mod360(L0ven + Cven);
+  const earth = getHelio(EL.Earth);
 
-  // ── MARS (Meeus, accurate ~0.5°) ──
-  const L0mar = mod360(355.4330 + 19140.2993 * T);
-  const Mmar  = mod360(319.5100 + 19139.8600 * T) * R;
-  const Cmar  = (10.6912 - 0.0120*T)*Math.sin(Mmar)
-              + 0.6228*Math.sin(2*Mmar)
-              + 0.0503*Math.sin(3*Mmar)
-              + 0.0046*Math.sin(4*Mmar);
-  const mars = mod360(L0mar + Cmar);
+  // Convert heliocentric → geocentric
+  function helioToGeo(lon_p, r_p) {
+    const dx = r_p * Math.cos(lon_p * Rd) - earth.r * Math.cos(earth.lon * Rd);
+    const dy = r_p * Math.sin(lon_p * Rd) - earth.r * Math.sin(earth.lon * Rd);
+    return mod360(Math.atan2(dy, dx) / Rd);
+  }
 
-  // ── JUPITER (Meeus, accurate ~0.1°) ──
-  const L0jup = mod360(34.3515 + 3034.9057 * T);
-  const Mjup  = mod360(20.0202 + 3034.9060 * T) * R;
-  const Cjup  = (5.5549 - 0.01638*T)*Math.sin(Mjup)
-              + 0.1683*Math.sin(2*Mjup)
-              - 0.0073*Math.sin(3*Mjup);
-  const jupiter = mod360(L0jup + Cjup);
+  // Sun = opposite of Earth heliocentric
+  const sun = mod360(earth.lon + 180);
 
-  // ── SATURN (Meeus, accurate ~0.3°) ──
-  const L0sat = mod360(50.0774 + 1222.1138 * T);
-  const Msat  = mod360(317.0207 + 1221.5520 * T) * R;
-  const Csat  = (6.3585 - 0.02990*T)*Math.sin(Msat)
-              + 0.2204*Math.sin(2*Msat)
-              + 0.0106*Math.sin(3*Msat);
-  const saturn = mod360(L0sat + Csat);
+  // Outer/inner planets via Kepler
+  const mer  = helioToGeo(...Object.values(getHelio(EL.Mercury)));
+  const ven  = helioToGeo(...Object.values(getHelio(EL.Venus)));
+  const mars = helioToGeo(...Object.values(getHelio(EL.Mars)));
+  const jup  = helioToGeo(...Object.values(getHelio(EL.Jupiter)));
+  const sat  = helioToGeo(...Object.values(getHelio(EL.Saturn)));
 
-  // ── RAHU — true ascending node (Meeus Ch.47) ──
-  const rahu = mod360(125.04452
-             - 1934.136261 * T
-             + 0.0020708   * T * T
-             + T * T * T / 450000);
+  // Moon (geocentric directly, Meeus Ch.47)
+  const Lm   = mod360(218.3165  + 481267.8813  * T);
+  const Dm   = mod360(297.85036 + 445267.11148 * T - 0.0019142 * T * T) * Rd;
+  const Mm   = mod360(357.52772 + 35999.05034  * T - 0.0001603 * T * T) * Rd;
+  const Mpm  = mod360(134.96298 + 477198.86742 * T + 0.0086972 * T * T) * Rd;
+  const Fm   = mod360(93.27191  + 483202.01753 * T - 0.0036825 * T * T) * Rd;
+  const dLm  = (6288774 * Math.sin(Mpm)
+             + 1274027 * Math.sin(2*Dm - Mpm)
+             +  658314 * Math.sin(2*Dm)
+             +  213618 * Math.sin(2*Mpm)
+             -  185116 * Math.sin(Mm)
+             -  114332 * Math.sin(2*Fm)
+             +   58793 * Math.sin(2*Dm - 2*Mpm)
+             +   57066 * Math.sin(2*Dm - Mm - Mpm)
+             +   53322 * Math.sin(2*Dm + Mpm)
+             +   45758 * Math.sin(2*Dm - Mm)
+             -   40923 * Math.sin(Mm - Mpm)
+             -   34720 * Math.sin(Dm)
+             -   30383 * Math.sin(Mm + Mpm)
+             +   15327 * Math.sin(2*Dm - 2*Fm)
+             -   12528 * Math.sin(Mpm + 2*Fm)
+             +   10980 * Math.sin(Mpm - 2*Fm)) / 1000000;
+  const moon = mod360(Lm + dLm);
+
+  // Rahu — true ascending node (Meeus Ch.47)
+  const rahu = mod360(125.04452 - 1934.136261*T + 0.0020708*T*T + T*T*T/450000);
 
   return {
     'சூரியன்':  sun,
     'சந்திரன்': moon,
     'செவ்வாய்': mars,
-    'புதன்':    mercury,
-    'குரு':     jupiter,
-    'சுக்கிரன்':venus,
-    'சனி':      saturn,
+    'புதன்':    mer,
+    'குரு':     jup,
+    'சுக்கிரன்':ven,
+    'சனி':      sat,
     'ராகு':     rahu,
     'கேது':     mod360(rahu + 180)
   };
@@ -904,11 +900,13 @@ function tropicalLon(jd) {
 
 function siderealLon(jd) {
   const tropic = tropicalLon(jd);
-  const ayan = ayanamsha(jd);
+  const ayan   = ayanamsha(jd);
   const result = {};
   for (const p in tropic) result[p] = mod360(tropic[p] - ayan);
   return result;
 }
+
+
 
 function lonToRasi(lon) { return Math.floor(lon / 30); }
 function lonToDeg(lon) { return lon % 30; }
