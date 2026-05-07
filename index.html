@@ -544,49 +544,46 @@ tbody tr:hover td { background: #13132A; }
   padding: 10px; margin-top: -6px; margin-bottom: 8px;
 }
 .date-toggle-body.open { display: block; }
-/* ── DASHA ACCORDION ── */
-.dasha-accordion { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 6px; }
-
-.dacc-dasha { border-bottom: 1px solid var(--border); }
-.dacc-dasha:last-child { border-bottom: none; }
-
-.dacc-dasha-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 9px 10px; cursor: pointer;
-  background: var(--bg3);
-  transition: background 0.15s;
-  user-select: none;
+/* ── DASHA 3-TAB LAYOUT ── */
+.dasha-tabs { display:flex; gap:3px; margin-bottom:6px; }
+.dasha-tab {
+  flex:1; background:var(--bg3); color:var(--text-dim);
+  border:1px solid var(--border); border-radius:6px;
+  padding:7px 4px; font-size:11px; font-weight:600;
+  cursor:pointer; font-family:'Noto Sans Tamil',sans-serif;
+  transition:all 0.2s; text-align:center;
 }
-.dacc-dasha-row:active { background: #1A1A2A; }
+.dasha-tab.active { background:var(--gold); color:#000; border-color:var(--gold); }
 
-.dacc-bukthi-list { background: #0A0A14; }
+.dasha-panel { display:none; }
+.dasha-panel.active { display:block; }
 
-.dacc-bukthi { border-top: 1px solid #111120; }
-.dacc-bukthi-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 7px 10px 7px 22px; cursor: pointer;
-  background: #0C0C1A;
-  transition: background 0.15s;
-  user-select: none;
+.dasha-subtitle {
+  font-size:11px; color:var(--gold); font-weight:700;
+  padding:5px 0 4px; margin-bottom:4px;
+  border-bottom:1px solid var(--border-gold);
 }
-.dacc-bukthi-row:active { background: #141428; }
-
-.dacc-antharam-list { background: #060610; }
-.dacc-antharam-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 6px 10px 6px 38px;
-  border-top: 1px solid #0A0A18;
+.dasha-table { width:100%; border-collapse:collapse; font-size:12px; }
+.dasha-table thead th {
+  background:var(--bg3); color:var(--text-dim);
+  font-size:10px; font-weight:600;
+  padding:5px 6px; text-align:left;
+  border-bottom:1px solid var(--border);
 }
-
-.dacc-arrow { font-size: 9px; color: var(--text-dim); flex-shrink: 0; width: 10px; }
-.dacc-b-arrow { color: #444; }
-.dacc-lord { flex: 1; font-size: 12px; color: var(--text); font-weight: 600; font-family: 'Noto Sans Tamil', sans-serif; }
-.dacc-date { font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
-
-/* Current period highlight */
-.dacc-cur-text { color: var(--gold-light) !important; font-weight: 700 !important; }
-.dacc-dasha.dacc-cur > .dacc-dasha-row { background: #1A1500; }
-.dacc-bukthi.dacc-cur > .dacc-bukthi-row { background: #161200; }
+.dasha-table tbody td { padding:6px 6px; border-bottom:1px solid #0F0F1C; }
+.dasha-table tbody tr:hover td { background:#13132A; }
+/* Clickable rows */
+.dasha-table tbody tr[onclick] td { color:var(--text); }
+.dasha-table tbody tr[onclick]:active td { background:#1A1A2E; }
+/* Current period */
+.dasha-table tr.dasha-current td {
+  color:var(--gold-light); font-weight:700;
+  background:#E8A02014;
+}
+/* Selected (drill-into) row */
+.dasha-table tr.dasha-selected td {
+  color:var(--gold); background:#E8A02008;
+}
 
 
 /* Legend paarvai label */
@@ -1336,75 +1333,127 @@ function renderDasha(containerId, data) {
   const moonLon = moon.lon !== undefined ? moon.lon : (moon.rasiIdx * 30 + moon.deg);
   const { dashas, MS_PER_YR } = vimsottariDasha(moonLon, data.jd);
   const nowMs = Date.now();
+  const cid = containerId;
 
-  function endMs(startMs, yrs) { return startMs + yrs * MS_PER_YR; }
-  function isCur(startMs, yrs) { return startMs <= nowMs && endMs(startMs, yrs) > nowMs; }
+  function endMs(s, y) { return s + y * MS_PER_YR; }
+  function isCur(s, y) { return s <= nowMs && endMs(s,y) > nowMs; }
 
-  // Build full accordion HTML — all data pre-computed, shown/hidden via CSS
-  let html = `<div class="dasha-accordion" id="${containerId}-acc">`;
+  // Find defaults: current dasha and bukthi indices
+  let defDi = dashas.findIndex(d => isCur(d.startMs, d.yrs));
+  if (defDi < 0) defDi = 0;
+  const defBukthis = getBukthiAntharams(dashas[defDi].lord, dashas[defDi].startMs, dashas[defDi].yrs, MS_PER_YR);
+  let defBi = defBukthis.findIndex(b => isCur(b.startMs, b.yrs));
+  if (defBi < 0) defBi = 0;
 
+  // ── TAB BAR ──
+  let html = `<div class="dasha-tabs" id="${cid}-tabs">
+    <button class="dasha-tab active" id="${cid}-tab-d" onclick="dsTab('${cid}','d')">தசை</button>
+    <button class="dasha-tab" id="${cid}-tab-b" onclick="dsTab('${cid}','b')">புத்தி</button>
+    <button class="dasha-tab" id="${cid}-tab-a" onclick="dsTab('${cid}','a')">அந்தரம்</button>
+  </div>`;
+
+  // ── PANEL D: DASHA LIST ──
+  html += `<div class="dasha-panel active" id="${cid}-panel-d"><table class="dasha-table">
+    <thead><tr><th>தசை</th><th>முடிவு தேதி</th></tr></thead><tbody>`;
   for (let di = 0; di < dashas.length; di++) {
     const d = dashas[di];
-    const dCur = isCur(d.startMs, d.yrs);
-    const dKey = `${containerId}-d${di}`;
-    const bukthis = getBukthiAntharams(d.lord, d.startMs, d.yrs, MS_PER_YR);
-
-    html += `<div class="dacc-dasha ${dCur ? 'dacc-cur' : ''}">
-      <div class="dacc-dasha-row" onclick="toggleDasha('${dKey}')">
-        <span class="dacc-arrow" id="${dKey}-arr">▶</span>
-        <span class="dacc-lord ${dCur ? 'dacc-cur-text' : ''}">${DASHA_SHORT[d.lord]} தசை</span>
-        <span class="dacc-date ${dCur ? 'dacc-cur-text' : ''}">${msToDate(endMs(d.startMs, d.yrs))}</span>
-      </div>
-      <div class="dacc-bukthi-list" id="${dKey}-list" style="display:${dCur ? 'block' : 'none'}">`;
-
-    for (let bi = 0; bi < bukthis.length; bi++) {
-      const b = bukthis[bi];
-      const bCur = dCur && isCur(b.startMs, b.yrs);
-      const bKey = `${dKey}-b${bi}`;
-
-      html += `<div class="dacc-bukthi ${bCur ? 'dacc-cur' : ''}">
-        <div class="dacc-bukthi-row" onclick="toggleBukthi('${bKey}')">
-          <span class="dacc-arrow dacc-b-arrow" id="${bKey}-arr">▶</span>
-          <span class="dacc-lord ${bCur ? 'dacc-cur-text' : ''}">${DASHA_SHORT[d.lord]}/${DASHA_SHORT[b.lord]}</span>
-          <span class="dacc-date ${bCur ? 'dacc-cur-text' : ''}">${msToDate(endMs(b.startMs, b.yrs))}</span>
-        </div>
-        <div class="dacc-antharam-list" id="${bKey}-list" style="display:${bCur ? 'block' : 'none'}">`;
-
-      for (const a of b.antharams) {
-        const aCur = bCur && isCur(a.startMs, a.yrs);
-        html += `<div class="dacc-antharam-row ${aCur ? 'dacc-cur-text' : ''}">
-          <span class="dacc-lord">${DASHA_SHORT[d.lord]}/${DASHA_SHORT[b.lord]}/${DASHA_SHORT[a.lord]}</span>
-          <span class="dacc-date">${msToDate(endMs(a.startMs, a.yrs))}</span>
-        </div>`;
-      }
-
-      html += `</div></div>`; // close bukthi
-    }
-
-    html += `</div></div>`; // close bukthi-list + dasha
+    const cur = isCur(d.startMs, d.yrs);
+    const sel = di === defDi;
+    html += `<tr class="${cur ? 'dasha-current' : ''} ${sel ? 'dasha-selected' : ''}"
+      onclick="dsDrillDasha('${cid}',${di})" style="cursor:pointer">
+      <td>${cur ? '▶ ' : ''}${DASHA_SHORT[d.lord]} தசை</td>
+      <td>${msToDate(endMs(d.startMs, d.yrs))}</td>
+    </tr>`;
   }
+  html += `</tbody></table></div>`;
 
-  html += `</div>`; // close accordion
+  // ── PANEL B: BUKTHI LIST (pre-render for selected dasha) ──
+  html += `<div class="dasha-panel" id="${cid}-panel-b">${buildBukthiPanel(cid, dashas, defDi, MS_PER_YR, nowMs, defBi)}</div>`;
+
+  // ── PANEL A: ANTHARAM LIST (pre-render for selected bukthi) ──
+  html += `<div class="dasha-panel" id="${cid}-panel-a">${buildAntharamPanel(cid, dashas, defDi, defBukthis, defBi, MS_PER_YR, nowMs)}</div>`;
+
   el.innerHTML = html;
+
+  // Store state on el for drill-down
+  el._dashas = dashas;
+  el._MS_PER_YR = MS_PER_YR;
+  el._nowMs = nowMs;
 }
 
-function toggleDasha(dKey) {
-  const list = document.getElementById(dKey + '-list');
-  const arr  = document.getElementById(dKey + '-arr');
-  if (!list) return;
-  const open = list.style.display !== 'none';
-  list.style.display = open ? 'none' : 'block';
-  if (arr) arr.textContent = open ? '▶' : '▼';
+function buildBukthiPanel(cid, dashas, di, MS_PER_YR, nowMs, selBi) {
+  const d = dashas[di];
+  const bukthis = getBukthiAntharams(d.lord, d.startMs, d.yrs, MS_PER_YR);
+  function endMs(s,y){return s+y*MS_PER_YR;}
+  function isCur(s,y){return s<=nowMs&&endMs(s,y)>nowMs;}
+  let h = `<div class="dasha-subtitle">${DASHA_SHORT[d.lord]} தசை புத்திகள்</div>
+    <table class="dasha-table"><thead><tr><th>தசை/புத்தி</th><th>முடிவு தேதி</th></tr></thead><tbody>`;
+  for (let bi = 0; bi < bukthis.length; bi++) {
+    const b = bukthis[bi];
+    const cur = isCur(b.startMs, b.yrs);
+    const sel = bi === selBi;
+    h += `<tr class="${cur?'dasha-current':''} ${sel?'dasha-selected':''}"
+      onclick="dsDrillBukthi('${cid}',${di},${bi})" style="cursor:pointer">
+      <td>${cur?'▶ ':''}${DASHA_SHORT[d.lord]}/${DASHA_SHORT[b.lord]}</td>
+      <td>${msToDate(endMs(b.startMs,b.yrs))}</td>
+    </tr>`;
+  }
+  h += `</tbody></table>`;
+  return h;
 }
 
-function toggleBukthi(bKey) {
-  const list = document.getElementById(bKey + '-list');
-  const arr  = document.getElementById(bKey + '-arr');
-  if (!list) return;
-  const open = list.style.display !== 'none';
-  list.style.display = open ? 'none' : 'block';
-  if (arr) arr.textContent = open ? '▶' : '▼';
+function buildAntharamPanel(cid, dashas, di, bukthis, bi, MS_PER_YR, nowMs) {
+  const d = dashas[di];
+  const b = bukthis[bi];
+  function endMs(s,y){return s+y*MS_PER_YR;}
+  function isCur(s,y){return s<=nowMs&&endMs(s,y)>nowMs;}
+  let h = `<div class="dasha-subtitle">${DASHA_SHORT[d.lord]}/${DASHA_SHORT[b.lord]} புத்தி அந்தரங்கள்</div>
+    <table class="dasha-table"><thead><tr><th>தசை/புத்தி/அந்தரம்</th><th>முடிவு தேதி</th></tr></thead><tbody>`;
+  for (const a of b.antharams) {
+    const cur = isCur(a.startMs, a.yrs);
+    h += `<tr class="${cur?'dasha-current':''}">
+      <td>${cur?'▶ ':''}${DASHA_SHORT[d.lord]}/${DASHA_SHORT[b.lord]}/${DASHA_SHORT[a.lord]}</td>
+      <td>${msToDate(endMs(a.startMs,a.yrs))}</td>
+    </tr>`;
+  }
+  h += `</tbody></table>`;
+  return h;
 }
+
+// Click a dasha row → go to bukthi tab showing that dasha's bukthis
+function dsDrillDasha(cid, di) {
+  const el = document.getElementById(cid);
+  if (!el || !el._dashas) return;
+  const {_dashas: dashas, _MS_PER_YR: MS_PER_YR, _nowMs: nowMs} = el;
+  const bukthis = getBukthiAntharams(dashas[di].lord, dashas[di].startMs, dashas[di].yrs, MS_PER_YR);
+  let defBi = bukthis.findIndex(b => b.startMs <= nowMs && (b.startMs + b.yrs*MS_PER_YR) > nowMs);
+  if (defBi < 0) defBi = 0;
+  document.getElementById(`${cid}-panel-b`).innerHTML = buildBukthiPanel(cid, dashas, di, MS_PER_YR, nowMs, defBi);
+  document.getElementById(`${cid}-panel-a`).innerHTML = buildAntharamPanel(cid, dashas, di, bukthis, defBi, MS_PER_YR, nowMs);
+  dsTab(cid, 'b');
+}
+
+// Click a bukthi row → go to antharam tab showing that bukthi's antharams
+function dsDrillBukthi(cid, di, bi) {
+  const el = document.getElementById(cid);
+  if (!el || !el._dashas) return;
+  const {_dashas: dashas, _MS_PER_YR: MS_PER_YR, _nowMs: nowMs} = el;
+  const bukthis = getBukthiAntharams(dashas[di].lord, dashas[di].startMs, dashas[di].yrs, MS_PER_YR);
+  document.getElementById(`${cid}-panel-a`).innerHTML = buildAntharamPanel(cid, dashas, di, bukthis, bi, MS_PER_YR, nowMs);
+  dsTab(cid, 'a');
+}
+
+// Switch between the 3 tabs
+function dsTab(cid, tab) {
+  ['d','b','a'].forEach(t => {
+    document.getElementById(`${cid}-panel-${t}`)?.classList.toggle('active', t===tab);
+    document.getElementById(`${cid}-tab-${t}`)?.classList.toggle('active', t===tab);
+  });
+}
+
+function toggleDasha(dKey) {}  // kept for compatibility
+function toggleBukthi(bKey) {} // kept for compatibility
+
 
 
 // ═══════════════════════════════════════════════════
@@ -1885,10 +1934,13 @@ function loadSavedChart() {
   const charts = getSavedCharts();
   const c = charts[idx];
   if (!c) return;
+
+  // Persist last selected index
+  localStorage.setItem('last_saved_idx', idx);
+
   // Fill in fields
   document.getElementById('sel-date').value = c.date;
   document.getElementById('sel-time').value = c.time;
-  // Set place dropdown — try to match lat/lon, else set custom
   const placeEl = document.getElementById('sel-place');
   let matched = false;
   for (const opt of placeEl.options) {
@@ -1900,8 +1952,34 @@ function loadSavedChart() {
     document.getElementById('sel-lon').value = c.lon;
     document.getElementById('custom-loc').style.display = 'flex';
   }
-  // Calculate chart
   calcDateChart();
+}
+
+function restoreLastSavedChart() {
+  const lastIdx = localStorage.getItem('last_saved_idx');
+  if (lastIdx === null) return;
+  const idx = parseInt(lastIdx);
+  const charts = getSavedCharts();
+  if (!charts[idx]) return;
+  const sel = document.getElementById('saved-select');
+  if (sel) sel.value = idx;
+  // Silently fill fields and calculate without collapsing panel
+  const c = charts[idx];
+  document.getElementById('sel-date').value = c.date;
+  document.getElementById('sel-time').value = c.time;
+  const placeEl = document.getElementById('sel-place');
+  let matched = false;
+  for (const opt of placeEl.options) {
+    if (opt.value === `${c.lat},${c.lon}`) { placeEl.value = opt.value; matched = true; break; }
+  }
+  if (!matched) {
+    placeEl.value = 'custom';
+    document.getElementById('sel-lat').value = c.lat;
+    document.getElementById('sel-lon').value = c.lon;
+    document.getElementById('custom-loc').style.display = 'flex';
+  }
+  calcDateChart();
+  updateDateLabel();
 }
 
 function deleteSavedChart() {
@@ -1913,15 +1991,17 @@ function deleteSavedChart() {
   if (!confirm(`"${name}" — இதை நீக்கவா?`)) return;
   charts.splice(idx, 1);
   setSavedCharts(charts);
+  localStorage.removeItem('last_saved_idx');
   refreshSavedDropdown();
 }
 
 // Boot
 window.addEventListener('load', () => {
   refreshNow();
-  calcDateChart();
-  showTab(0);
   refreshSavedDropdown();
+  restoreLastSavedChart(); // restores last saved selection and calculates date chart
+  if (!localStorage.getItem('last_saved_idx')) calcDateChart(); // fallback
+  showTab(0);
 });
 
 </script>
