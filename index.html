@@ -1040,17 +1040,21 @@ function getStatus(planet, rasiIdx, deg) {
 
 // Retrograde: planets are retrograde at certain times (simplified check)
 // For demo: mark as retrograde based on approximate synodic cycles
-// Retrograde detection: compute geocentric longitude 1 day before and after
-// Negative daily motion = retrograde. Sun and Moon never retrograde.
-// Rahu/Ketu always retrograde (mean node moves backward always).
+// Retrograde: cache orbital results to avoid recomputing 14× per chart
+const _retroCache = new Map();
 function isRetrograde(planet, jd) {
   if (['சூரியன்','சந்திரன்'].includes(planet)) return false;
   if (['ராகு','கேது'].includes(planet)) return true;
+  const key = `${planet}|${Math.round(jd*10)}`;
+  if (_retroCache.has(key)) return _retroCache.get(key);
   const lonBefore = siderealLon(jd - 1)[planet];
   const lonAfter  = siderealLon(jd + 1)[planet];
-  // Angular difference handling 360 wrap
   const diff = ((lonAfter - lonBefore + 180 + 360) % 360) - 180;
-  return diff < 0;
+  const result = diff < 0;
+  _retroCache.set(key, result);
+  // Limit cache size
+  if (_retroCache.size > 50) _retroCache.delete(_retroCache.keys().next().value);
+  return result;
 }
 
 // Natchatra from longitude
@@ -1185,84 +1189,43 @@ function buildChartData(jd, isNavamsa = false, lat = 13.0827, geoLon = 80.2707) 
 // ═══════════════════════════════════════════════════
 function renderSIChart(containerId, data) {
   const el = document.getElementById(containerId);
-  el.innerHTML = '';
 
-  // SI grid: fixed rasi positions
-  // Row0: 11,0,1,2 | Row1: 10,[C],3 | Row2: 9,[C],4 | Row3: 8,7,6,5
-  const GRID_RASI = [11,0,1,2, 10,'C',3, 9,4, 8,7,6,5];
+  const rasiMap = {};
+  for (let i = 0; i < 12; i++) rasiMap[i] = [];
+  for (const p of data.planets) rasiMap[p.rasiIdx].push(p);
 
-  // House numbers: house 1 = lagna rasi, clockwise
-  // SI clockwise order from Meena(11): 11→0→1→2→3→4→5→6→7→8→9→10→11
-  const CW_ORDER = [11,0,1,2,3,4,5,6,7,8,9,10]; // clockwise rasi sequence
+  const CW_ORDER = [11,0,1,2,3,4,5,6,7,8,9,10];
   function houseNum(rasiIdx) {
     const lagnaPos = CW_ORDER.indexOf(data.lagnaRasi);
     const rasiPos  = CW_ORDER.indexOf(rasiIdx);
     return ((rasiPos - lagnaPos + 12) % 12) + 1;
   }
 
-  // Build map rasiIdx → planets
-  const rasiMap = {};
-  for (let i = 0; i < 12; i++) rasiMap[i] = [];
-  for (const p of data.planets) rasiMap[p.rasiIdx].push(p);
-
   function makeCell(rasiIdx) {
     const isLagna = rasiIdx === data.lagnaRasi;
-    const planets = rasiMap[rasiIdx];
-    const hNum = houseNum(rasiIdx);
-
-    let inner = `<div class="rasi-name">${RASI_SHORT[rasiIdx]}</div>`;
-    inner += `<div class="house-num">${hNum}</div>`;
+    const planets  = rasiMap[rasiIdx];
+    const hNum     = houseNum(rasiIdx);
+    let inner = `<div class="rasi-name">${RASI_SHORT[rasiIdx]}</div><div class="house-num">${hNum}</div>`;
     if (isLagna) inner += `<div class="lagna-tri"></div>`;
-
     let content = '';
-    if (isLagna) {
-      content += `<div class="pl"><span class="pl-n lagna-pl">ல</span><span class="pl-d">${data.lagnaRawDeg.toFixed(0)}°</span></div>`;
-    }
+    if (isLagna) content += `<div class="pl"><span class="pl-n lagna-pl">ல</span><span class="pl-d">${data.lagnaRawDeg.toFixed(0)}°</span></div>`;
     for (const p of planets) {
-      const retMark = p.retro ? '*' : '';
-      content += `<div class="pl">
-        <span class="pl-n ${p.status}">${p.short}${retMark}</span>
-        <span class="pl-d">${p.deg.toFixed(0)}°</span>
-      </div>`;
+      content += `<div class="pl"><span class="pl-n ${p.status}">${p.short}${p.retro?'*':''}</span><span class="pl-d">${p.deg.toFixed(0)}°</span></div>`;
     }
     return `<div class="cell">${inner}<div class="cell-content">${content}</div></div>`;
   }
 
-  // Build grid HTML
-  // Row 0
-  el.innerHTML += makeCell(11);
-  el.innerHTML += makeCell(0);
-  el.innerHTML += makeCell(1);
-  el.innerHTML += makeCell(2);
-  // Row 1
-  el.innerHTML += makeCell(10);
-  // Centre cell — lagna info only, no arrows
-  el.innerHTML += `<div class="cell centre" id="${containerId}-centre">
-    <div class="centre-label">ராசி</div>
-    <div class="centre-rasi">${RASI[data.lagnaRasi]}<br/>லக்னம்
-      <span style="color:var(--degree);font-size:10px;"> ${data.lagnaRawDeg.toFixed(1)}°</span>
-    </div>
-  </div>`;
-  el.innerHTML += makeCell(3);
-  // Row 2
-  el.innerHTML += makeCell(9);
-  el.innerHTML += makeCell(4);
-  // Row 3
-  el.innerHTML += makeCell(8);
-  el.innerHTML += makeCell(7);
-  el.innerHTML += makeCell(6);
-  el.innerHTML += makeCell(5);
+  const centre = `<div class="cell centre"><div class="centre-label">ராசி</div><div class="centre-rasi">${RASI[data.lagnaRasi]}<br/>லக்னம் <span style="color:var(--degree);font-size:10px;">${data.lagnaRawDeg.toFixed(1)}°</span></div></div>`;
 
+  // Set as ONE assignment — never use +=
+  el.innerHTML =
+    makeCell(11)+makeCell(0)+makeCell(1)+makeCell(2)+
+    makeCell(10)+centre+makeCell(3)+
+    makeCell(9)+makeCell(4)+
+    makeCell(8)+makeCell(7)+makeCell(6)+makeCell(5);
 }
 
-// ── VIMSOTTARI DASHA CALCULATION ──────────────────────────────
-// SVG viewBox "0 0 100 100" covers the FULL 4×4 chart.
-// Each rasi has a centre point. Arrows run between centres.
-// Lines are clipped to stay within the centre 2×2 box (25-75, 25-75)
-// using Cohen-Sutherland line clipping.
-function drawAspects(containerId, data) {
-  const svg = document.getElementById(containerId + '-svg');
-  if (!svg) return;
+
 
 
 // ═══════════════════════════════════════════════════
