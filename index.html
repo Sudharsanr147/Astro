@@ -544,39 +544,50 @@ tbody tr:hover td { background: #13132A; }
   padding: 10px; margin-top: -6px; margin-bottom: 8px;
 }
 .date-toggle-body.open { display: block; }
-/* ── DASHA TABLES ── */
-.dasha-tabs { display:flex; gap:4px; margin-bottom:6px; flex-wrap:wrap; }
-.dasha-tab {
-  flex:1; min-width:80px;
-  background:var(--bg3); color:var(--text-dim);
-  border:1px solid var(--border); border-radius:6px;
-  padding:6px 4px; font-size:11px; font-weight:600;
-  cursor:pointer; font-family:'Noto Sans Tamil',sans-serif;
-  transition:all 0.2s;
+/* ── DASHA ACCORDION ── */
+.dasha-accordion { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 6px; }
+
+.dacc-dasha { border-bottom: 1px solid var(--border); }
+.dacc-dasha:last-child { border-bottom: none; }
+
+.dacc-dasha-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 10px; cursor: pointer;
+  background: var(--bg3);
+  transition: background 0.15s;
+  user-select: none;
 }
-.dasha-tab.active { background:var(--gold); color:#000; border-color:var(--gold); }
-.dasha-panel { display:none; }
-.dasha-panel.active { display:block; }
-.dasha-subtitle {
-  font-size:11px; color:var(--gold); font-weight:700;
-  margin-bottom:5px; padding:4px 0;
-  border-bottom:1px solid var(--border-gold);
+.dacc-dasha-row:active { background: #1A1A2A; }
+
+.dacc-bukthi-list { background: #0A0A14; }
+
+.dacc-bukthi { border-top: 1px solid #111120; }
+.dacc-bukthi-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px 7px 22px; cursor: pointer;
+  background: #0C0C1A;
+  transition: background 0.15s;
+  user-select: none;
 }
-.dasha-table { width:100%; border-collapse:collapse; font-size:12px; }
-.dasha-table th {
-  background:var(--bg3); color:var(--text-dim);
-  font-size:10px; font-weight:600;
-  padding:5px 6px; text-align:left;
-  border-bottom:1px solid var(--border);
+.dacc-bukthi-row:active { background: #141428; }
+
+.dacc-antharam-list { background: #060610; }
+.dacc-antharam-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px 6px 38px;
+  border-top: 1px solid #0A0A18;
 }
-.dasha-table td { padding:5px 6px; border-bottom:1px solid #0F0F1C; }
-.dasha-table tr.dasha-current td {
-  color:var(--gold-light); font-weight:700;
-  background:#E8A02011;
-}
-.dasha-table tr.dasha-current td:first-child::before {
-  content:'▶ '; color:var(--gold);
-}
+
+.dacc-arrow { font-size: 9px; color: var(--text-dim); flex-shrink: 0; width: 10px; }
+.dacc-b-arrow { color: #444; }
+.dacc-lord { flex: 1; font-size: 12px; color: var(--text); font-weight: 600; font-family: 'Noto Sans Tamil', sans-serif; }
+.dacc-date { font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
+
+/* Current period highlight */
+.dacc-cur-text { color: var(--gold-light) !important; font-weight: 700 !important; }
+.dacc-dasha.dacc-cur > .dacc-dasha-row { background: #1A1500; }
+.dacc-bukthi.dacc-cur > .dacc-bukthi-row { background: #161200; }
+
 
 /* Legend paarvai label */
 .paarvai-label {
@@ -1319,70 +1330,82 @@ function renderDasha(containerId, data) {
   const el = document.getElementById(containerId);
   if (!el) return;
 
-  // Find Moon's sidereal longitude
   const moon = data.planets.find(p => p.name === 'சந்திரன்');
   if (!moon) { el.innerHTML = '<p style="color:#888;font-size:12px;">சந்திரன் தரவு இல்லை</p>'; return; }
 
-  const { dashas, birthMs, MS_PER_YR } = vimsottariDasha(moon.lon !== undefined ? moon.lon : (moon.rasiIdx*30 + moon.deg), data.jd);
+  const moonLon = moon.lon !== undefined ? moon.lon : (moon.rasiIdx * 30 + moon.deg);
+  const { dashas, MS_PER_YR } = vimsottariDasha(moonLon, data.jd);
   const nowMs = Date.now();
 
-  let html = `
-  <div class="dasha-tabs">
-    <button class="dasha-tab active" onclick="switchDashaTab('${containerId}','dasha')">விம்சோத்தரி தசை</button>
-    <button class="dasha-tab" onclick="switchDashaTab('${containerId}','bukthi')">விம்சோத்தரி புத்தி</button>
-    <button class="dasha-tab" onclick="switchDashaTab('${containerId}','antharam')">விம்சோத்தரி அந்தரம்</button>
-  </div>`;
+  function endMs(startMs, yrs) { return startMs + yrs * MS_PER_YR; }
+  function isCur(startMs, yrs) { return startMs <= nowMs && endMs(startMs, yrs) > nowMs; }
 
-  // ── DASHA TABLE ──
-  html += `<div class="dasha-panel active" id="${containerId}-dasha">
-    <table class="dasha-table">
-      <thead><tr><th>தசை</th><th>தொடக்கம்</th></tr></thead><tbody>`;
-  for (const d of dashas) {
-    const isCurrent = d.startMs <= nowMs && (d.startMs + d.yrs * MS_PER_YR) > nowMs;
-    const cls = isCurrent ? ' class="dasha-current"' : '';
-    html += `<tr${cls}><td>${DASHA_SHORT[d.lord]}</td><td>${msToDate(d.startMs)}</td></tr>`;
+  // Build full accordion HTML — all data pre-computed, shown/hidden via CSS
+  let html = `<div class="dasha-accordion" id="${containerId}-acc">`;
+
+  for (let di = 0; di < dashas.length; di++) {
+    const d = dashas[di];
+    const dCur = isCur(d.startMs, d.yrs);
+    const dKey = `${containerId}-d${di}`;
+    const bukthis = getBukthiAntharams(d.lord, d.startMs, d.yrs, MS_PER_YR);
+
+    html += `<div class="dacc-dasha ${dCur ? 'dacc-cur' : ''}">
+      <div class="dacc-dasha-row" onclick="toggleDasha('${dKey}')">
+        <span class="dacc-arrow" id="${dKey}-arr">▶</span>
+        <span class="dacc-lord ${dCur ? 'dacc-cur-text' : ''}">${DASHA_SHORT[d.lord]} தசை</span>
+        <span class="dacc-date ${dCur ? 'dacc-cur-text' : ''}">${msToDate(endMs(d.startMs, d.yrs))}</span>
+      </div>
+      <div class="dacc-bukthi-list" id="${dKey}-list" style="display:${dCur ? 'block' : 'none'}">`;
+
+    for (let bi = 0; bi < bukthis.length; bi++) {
+      const b = bukthis[bi];
+      const bCur = dCur && isCur(b.startMs, b.yrs);
+      const bKey = `${dKey}-b${bi}`;
+
+      html += `<div class="dacc-bukthi ${bCur ? 'dacc-cur' : ''}">
+        <div class="dacc-bukthi-row" onclick="toggleBukthi('${bKey}')">
+          <span class="dacc-arrow dacc-b-arrow" id="${bKey}-arr">▶</span>
+          <span class="dacc-lord ${bCur ? 'dacc-cur-text' : ''}">${DASHA_SHORT[d.lord]}/${DASHA_SHORT[b.lord]}</span>
+          <span class="dacc-date ${bCur ? 'dacc-cur-text' : ''}">${msToDate(endMs(b.startMs, b.yrs))}</span>
+        </div>
+        <div class="dacc-antharam-list" id="${bKey}-list" style="display:${bCur ? 'block' : 'none'}">`;
+
+      for (const a of b.antharams) {
+        const aCur = bCur && isCur(a.startMs, a.yrs);
+        html += `<div class="dacc-antharam-row ${aCur ? 'dacc-cur-text' : ''}">
+          <span class="dacc-lord">${DASHA_SHORT[d.lord]}/${DASHA_SHORT[b.lord]}/${DASHA_SHORT[a.lord]}</span>
+          <span class="dacc-date">${msToDate(endMs(a.startMs, a.yrs))}</span>
+        </div>`;
+      }
+
+      html += `</div></div>`; // close bukthi
+    }
+
+    html += `</div></div>`; // close bukthi-list + dasha
   }
-  html += `</tbody></table></div>`;
 
-  // ── BUKTHI TABLE — show bukthis of current dasha ──
-  const curDasha = dashas.find(d => d.startMs <= nowMs && (d.startMs + d.yrs * MS_PER_YR) > nowMs) || dashas[0];
-  const bukthis  = getBukthiAntharams(curDasha.lord, curDasha.startMs, curDasha.yrs, MS_PER_YR);
-  html += `<div class="dasha-panel" id="${containerId}-bukthi">
-    <div class="dasha-subtitle">${DASHA_SHORT[curDasha.lord]} தசை புத்திகள்</div>
-    <table class="dasha-table">
-      <thead><tr><th>தசை/புத்தி</th><th>தொடக்கம்</th></tr></thead><tbody>`;
-  for (const b of bukthis) {
-    const isCurrent = b.startMs <= nowMs && (b.startMs + b.yrs * MS_PER_YR) > nowMs;
-    const cls = isCurrent ? ' class="dasha-current"' : '';
-    html += `<tr${cls}><td>${DASHA_SHORT[curDasha.lord]}/${DASHA_SHORT[b.lord]}</td><td>${msToDate(b.startMs)}</td></tr>`;
-  }
-  html += `</tbody></table></div>`;
-
-  // ── ANTHARAM TABLE — show antharams of current bukthi ──
-  const curBukthi = bukthis.find(b => b.startMs <= nowMs && (b.startMs + b.yrs * MS_PER_YR) > nowMs) || bukthis[0];
-  html += `<div class="dasha-panel" id="${containerId}-antharam">
-    <div class="dasha-subtitle">${DASHA_SHORT[curDasha.lord]}/${DASHA_SHORT[curBukthi.lord]} புத்தி அந்தரங்கள்</div>
-    <table class="dasha-table">
-      <thead><tr><th>தசை/புத்தி/அந்தரம்</th><th>தொடக்கம்</th></tr></thead><tbody>`;
-  for (const a of curBukthi.antharams) {
-    const isCurrent = a.startMs <= nowMs && (a.startMs + a.yrs * MS_PER_YR) > nowMs;
-    const cls = isCurrent ? ' class="dasha-current"' : '';
-    html += `<tr${cls}><td>${DASHA_SHORT[curDasha.lord]}/${DASHA_SHORT[curBukthi.lord]}/${DASHA_SHORT[a.lord]}</td><td>${msToDate(a.startMs)}</td></tr>`;
-  }
-  html += `</tbody></table></div>`;
-
+  html += `</div>`; // close accordion
   el.innerHTML = html;
 }
 
-function switchDashaTab(containerId, tab) {
-  const panels = document.querySelectorAll(`#${containerId} .dasha-panel`);
-  const tabs   = document.querySelectorAll(`#${containerId} .dasha-tab`);
-  panels.forEach(p => p.classList.remove('active'));
-  tabs.forEach(t => t.classList.remove('active'));
-  document.getElementById(`${containerId}-${tab}`)?.classList.add('active');
-  const tabIdx = ['dasha','bukthi','antharam'].indexOf(tab);
-  if (tabs[tabIdx]) tabs[tabIdx].classList.add('active');
+function toggleDasha(dKey) {
+  const list = document.getElementById(dKey + '-list');
+  const arr  = document.getElementById(dKey + '-arr');
+  if (!list) return;
+  const open = list.style.display !== 'none';
+  list.style.display = open ? 'none' : 'block';
+  if (arr) arr.textContent = open ? '▶' : '▼';
 }
+
+function toggleBukthi(bKey) {
+  const list = document.getElementById(bKey + '-list');
+  const arr  = document.getElementById(bKey + '-arr');
+  if (!list) return;
+  const open = list.style.display !== 'none';
+  list.style.display = open ? 'none' : 'block';
+  if (arr) arr.textContent = open ? '▶' : '▼';
+}
+
 
 // ═══════════════════════════════════════════════════
 // RENDER PLANET TABLE
