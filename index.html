@@ -544,6 +544,45 @@ tbody tr:hover td { background: #13132A; }
   padding: 10px; margin-top: -6px; margin-bottom: 8px;
 }
 .date-toggle-body.open { display: block; }
+/* ── DASHA TABLES ── */
+.dasha-tabs { display:flex; gap:4px; margin-bottom:6px; flex-wrap:wrap; }
+.dasha-tab {
+  flex:1; min-width:80px;
+  background:var(--bg3); color:var(--text-dim);
+  border:1px solid var(--border); border-radius:6px;
+  padding:6px 4px; font-size:11px; font-weight:600;
+  cursor:pointer; font-family:'Noto Sans Tamil',sans-serif;
+  transition:all 0.2s;
+}
+.dasha-tab.active { background:var(--gold); color:#000; border-color:var(--gold); }
+.dasha-panel { display:none; }
+.dasha-panel.active { display:block; }
+.dasha-subtitle {
+  font-size:11px; color:var(--gold); font-weight:700;
+  margin-bottom:5px; padding:4px 0;
+  border-bottom:1px solid var(--border-gold);
+}
+.dasha-table { width:100%; border-collapse:collapse; font-size:12px; }
+.dasha-table th {
+  background:var(--bg3); color:var(--text-dim);
+  font-size:10px; font-weight:600;
+  padding:5px 6px; text-align:left;
+  border-bottom:1px solid var(--border);
+}
+.dasha-table td { padding:5px 6px; border-bottom:1px solid #0F0F1C; }
+.dasha-table tr.dasha-current td {
+  color:var(--gold-light); font-weight:700;
+  background:#E8A02011;
+}
+.dasha-table tr.dasha-current td:first-child::before {
+  content:'▶ '; color:var(--gold);
+}
+
+/* Legend paarvai label */
+.paarvai-label {
+  font-size:11px; color:var(--gold); font-weight:700;
+  margin-right:6px; white-space:nowrap;
+}
 
 </style>
 
@@ -579,6 +618,7 @@ tbody tr:hover td { background: #13132A; }
     </div>
     <div class="section-title">இப்போதைய லக்னம் கட்டம்</div>
     <div class="asp-legend">
+      <span class="paarvai-label">பார்வை:</span>
       <div class="asp-leg-item"><div class="asp-line" style="background:#3DFFAA;height:2px;border-radius:1px;width:20px"></div>குரு (5,7,9)</div>
       <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dashed #FFB347;"></div>சனி (3,7,10)</div>
       <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dotted #FF5566;"></div>செவ்வாய் (4,7,8)</div>
@@ -594,6 +634,8 @@ tbody tr:hover td { background: #13132A; }
     <div class="pt-wrap"><div id="ptable-now-lagna"></div></div>
     <div class="section-title">நட்சத்திர சாரம் (Planet → Star → Lord → Sublord)</div>
     <div class="ns-wrap"><div id="nsaram-now-lagna"></div></div>
+    <div class="section-title">விம்சோத்தரி தசை</div>
+    <div class="pt-wrap"><div id="dasha-now-lagna"></div></div>
     <div class="section-title">ராசி நட்சத்திர கட்டம்</div>
     <div id="star-chart-0"></div>
   </div>
@@ -602,6 +644,7 @@ tbody tr:hover td { background: #13132A; }
   <div class="page" id="page1">
     <div class="section-title">இப்போதைய நவாம்சம் கட்டம்</div>
     <div class="asp-legend">
+      <span class="paarvai-label">பார்வை:</span>
       <div class="asp-leg-item"><div class="asp-line" style="background:#3DFFAA;height:2px;border-radius:1px;width:20px"></div>குரு (5,7,9)</div>
       <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dashed #FFB347;"></div>சனி (3,7,10)</div>
       <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dotted #FF5566;"></div>செவ்வாய் (4,7,8)</div>
@@ -670,9 +713,10 @@ tbody tr:hover td { background: #13132A; }
     </div>
     <div class="section-title">தேர்ந்த நேர லக்னம் கட்டம்</div>
     <div class="asp-legend">
-      <div class="asp-leg-item"><div class="asp-line" style="background:#3DFFAA;height:2px;border-radius:1px"></div>குரு (5,7,9)</div>
-      <div class="asp-leg-item"><div class="asp-line" style="height:0;border-top:2px dashed #FFB347;"></div>சனி (3,7,10)</div>
-      <div class="asp-leg-item"><div class="asp-line" style="height:0;border-top:2px dotted #FF5566;"></div>செவ்வாய் (4,7,8)</div>
+      <span class="paarvai-label">பார்வை:</span>
+      <div class="asp-leg-item"><div class="asp-line" style="background:#3DFFAA;height:2px;border-radius:1px;width:20px"></div>குரு (5,7,9)</div>
+      <div class="asp-leg-item"><div class="asp-line" style="height:0;border-top:2px dashed #FFB347;width:20px"></div>சனி (3,7,10)</div>
+      <div class="asp-leg-item"><div class="asp-line" style="height:0;border-top:2px dotted #FF5566;width:20px"></div>செவ்வாய் (4,7,8)</div>
     </div>
     <div class="si-chart" id="chart-sel-lagna"></div>
     <div class="legend">
@@ -685,6 +729,8 @@ tbody tr:hover td { background: #13132A; }
     <div class="pt-wrap"><div id="ptable-sel-lagna"></div></div>
     <div class="section-title">நட்சத்திர சாரம்</div>
     <div class="ns-wrap"><div id="nsaram-sel-lagna"></div></div>
+    <div class="section-title">விம்சோத்தரி தசை</div>
+    <div class="pt-wrap"><div id="dasha-sel-lagna"></div></div>
     <div class="section-title">ராசி நட்சத்திர கட்டம்</div>
     <div id="star-chart-2"></div>
   </div>
@@ -693,6 +739,7 @@ tbody tr:hover td { background: #13132A; }
   <div class="page" id="page3">
     <div class="section-title">தேர்ந்த நேர நவாம்சம் கட்டம்</div>
     <div class="asp-legend">
+      <span class="paarvai-label">பார்வை:</span>
       <div class="asp-leg-item"><div class="asp-line" style="background:#3DFFAA;height:2px;border-radius:1px;width:20px"></div>குரு (5,7,9)</div>
       <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dashed #FFB347;"></div>சனி (3,7,10)</div>
       <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dotted #FF5566;"></div>செவ்வாய் (4,7,8)</div>
@@ -1189,22 +1236,13 @@ function renderSIChart(containerId, data) {
   el.innerHTML += makeCell(2);
   // Row 1
   el.innerHTML += makeCell(10);
-  // Centre cell — will hold SVG aspects + lagna info
+  // Centre cell — lagna info only, no arrows
   el.innerHTML += `<div class="cell centre" id="${containerId}-centre">
     <div class="centre-label">ராசி</div>
     <div class="centre-rasi">${RASI[data.lagnaRasi]}<br/>லக்னம்
       <span style="color:var(--degree);font-size:10px;"> ${data.lagnaRawDeg.toFixed(1)}°</span>
     </div>
   </div>`;
-  // SVG overlay sits on the si-chart container, covering full grid
-  el.style.position = 'relative';
-  const svgOverlay = document.createElement('svg');
-  svgOverlay.id = containerId + '-svg';
-  svgOverlay.setAttribute('viewBox','0 0 100 100');
-  svgOverlay.setAttribute('xmlns','http://www.w3.org/2000/svg');
-  svgOverlay.setAttribute('preserveAspectRatio','none');
-  svgOverlay.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:10;overflow:visible;';
-  el.appendChild(svgOverlay);
   el.innerHTML += makeCell(3);
   // Row 2
   el.innerHTML += makeCell(9);
@@ -1215,11 +1253,9 @@ function renderSIChart(containerId, data) {
   el.innerHTML += makeCell(6);
   el.innerHTML += makeCell(5);
 
-  // Draw aspects into SVG after DOM is ready
-  requestAnimationFrame(() => drawAspects(containerId, data));
 }
 
-// ── ASPECT DRAWING ──────────────────────────────────────────────
+// ── VIMSOTTARI DASHA CALCULATION ──────────────────────────────
 // SVG viewBox "0 0 100 100" covers the FULL 4×4 chart.
 // Each rasi has a centre point. Arrows run between centres.
 // Lines are clipped to stay within the centre 2×2 box (25-75, 25-75)
@@ -1228,118 +1264,161 @@ function drawAspects(containerId, data) {
   const svg = document.getElementById(containerId + '-svg');
   if (!svg) return;
 
-  // Centre of each rasi cell in the 100×100 SVG space
-  // Grid: 4 columns × 4 rows, each cell = 25×25 units
-  // Row0(y=0-25):  rasi 11,0,1,2  → centres at y=12.5
-  // Row1(y=25-50): rasi 10,[C],3  → centres at y=37.5
-  // Row2(y=50-75): rasi 9,[C],4   → centres at y=62.5
-  // Row3(y=75-100):rasi 8,7,6,5   → centres at y=87.5
-  const RASI_CENTRE = {
-    11:[12.5,12.5], 0:[37.5,12.5], 1:[62.5,12.5], 2:[87.5,12.5],
-    10:[12.5,37.5],                                 3:[87.5,37.5],
-     9:[12.5,62.5],                                 4:[87.5,62.5],
-     8:[12.5,87.5], 7:[37.5,87.5], 6:[62.5,87.5],  5:[87.5,87.5]
-  };
 
-  // Cohen-Sutherland clip to centre box (x:25-75, y:25-75)
-  const XMIN=25,XMAX=75,YMIN=25,YMAX=75;
-  function code(x,y){
-    return ((x<XMIN)?1:0)|((x>XMAX)?2:0)|((y<YMIN)?4:0)|((y>YMAX)?8:0);
+// ═══════════════════════════════════════════════════
+// VIMSOTTARI DASHA ENGINE
+// ═══════════════════════════════════════════════════
+// Dasha lords in order, with years
+const DASHA_LORD_ORDER = ['கேது','சுக்கிரன்','சூரியன்','சந்திரன்','செவ்வாய்','ராகு','குரு','சனி','புதன்'];
+const DASHA_YEARS_MAP  = {கேது:7,சுக்கிரன்:20,சூரியன்:6,சந்திரன்:10,செவ்வாய்:7,ராகு:18,குரு:16,சனி:19,புதன்:17};
+const DASHA_SHORT      = {கேது:'கே',சுக்கிரன்:'சு',சூரியன்:'சூ',சந்திரன்:'சந்',செவ்வாய்:'செ',ராகு:'ரா',குரு:'கு',சனி:'சனி',புதன்:'பு'};
+const TOTAL_DASHA_YRS  = 120;
+const MS_PER_DAY       = 86400000;
+// Each natchatra (0-26) maps to a dasha lord index in DASHA_LORD_ORDER
+const NAT_LORD_IDX     = [0,1,2,3,4,5,6,7,8, 0,1,2,3,4,5,6,7,8, 0,1,2,3,4,5,6,7,8];
+
+function vimsottariDasha(moonLonSid, birthJD) {
+  // Moon's natchatra (0-26) and position within it
+  const starSpan   = 360 / 27; // 13.333...°
+  const natIdx     = Math.floor(moonLonSid / starSpan);
+  const degInStar  = moonLonSid - natIdx * starSpan;
+  const fracInStar = degInStar / starSpan; // 0 to 1
+
+  // Lord of this natchatra
+  const lordIdx    = NAT_LORD_IDX[natIdx];
+  const lord       = DASHA_LORD_ORDER[lordIdx];
+  const lordYrs    = DASHA_YEARS_MAP[lord];
+
+  // Balance of dasha at birth = remaining fraction of lord's period
+  const balanceYrs = lordYrs * (1 - fracInStar);
+
+  // Build full dasha sequence from birth
+  const MS_PER_YR = 365.25 * MS_PER_DAY;
+  const birthMs   = (birthJD - 2440587.5) * MS_PER_DAY; // JD to Unix ms
+
+  const dashas = [];
+  let cursor   = birthMs;
+  let startIdx = lordIdx;
+
+  // First dasha (balance)
+  dashas.push({ lord, yrs: balanceYrs, startMs: cursor });
+  cursor += balanceYrs * MS_PER_YR;
+
+  // Remaining 8 dashas in full
+  for (let i = 1; i <= 8; i++) {
+    const idx  = (startIdx + i) % 9;
+    const l    = DASHA_LORD_ORDER[idx];
+    const yrs  = DASHA_YEARS_MAP[l];
+    dashas.push({ lord: l, yrs, startMs: cursor });
+    cursor += yrs * MS_PER_YR;
   }
-  function clip(x1,y1,x2,y2){
-    let c1=code(x1,y1),c2=code(x2,y2);
-    for(let i=0;i<10;i++){
-      if(!(c1|c2)) return [x1,y1,x2,y2]; // both inside
-      if(c1&c2) return null; // both outside same region
-      const cout=c1||c2;
-      let x,y;
-      if(cout&8){x=x1+(x2-x1)*(YMAX-y1)/(y2-y1);y=YMAX;}
-      else if(cout&4){x=x1+(x2-x1)*(YMIN-y1)/(y2-y1);y=YMIN;}
-      else if(cout&2){y=y1+(y2-y1)*(XMAX-x1)/(x2-x1);x=XMAX;}
-      else{y=y1+(y2-y1)*(XMIN-x1)/(x2-x1);x=XMIN;}
-      if(cout===c1){x1=x;y1=y;c1=code(x,y);}
-      else{x2=x;y2=y;c2=code(x,y);}
+  return { dashas, birthMs, MS_PER_YR };
+}
+
+function getBukthiAntharams(dashaLord, dashaStartMs, dashaYrs, MS_PER_YR) {
+  // Bukthi lords start from dashaLord itself
+  const startIdx = DASHA_LORD_ORDER.indexOf(dashaLord);
+  const bukthis  = [];
+  let cursor     = dashaStartMs;
+
+  for (let i = 0; i < 9; i++) {
+    const bIdx = (startIdx + i) % 9;
+    const bl   = DASHA_LORD_ORDER[bIdx];
+    const bYrs = dashaYrs * DASHA_YEARS_MAP[bl] / TOTAL_DASHA_YRS;
+
+    // Antharams within this bukthi
+    const bStartIdx = bIdx;
+    const antharams = [];
+    let aCursor     = cursor;
+    for (let j = 0; j < 9; j++) {
+      const aIdx = (bStartIdx + j) % 9;
+      const al   = DASHA_LORD_ORDER[aIdx];
+      const aYrs = bYrs * DASHA_YEARS_MAP[al] / TOTAL_DASHA_YRS;
+      antharams.push({ lord: al, startMs: aCursor, yrs: aYrs });
+      aCursor += aYrs * MS_PER_YR;
     }
-    return null;
-  }
 
-  const CW_ORDER = [11,0,1,2,3,4,5,6,7,8,9,10];
-  const ASPECT_PLANETS = [
-    {name:'குரு',    color:'#3DFFAA', dash:'',     sw:1.8, aspects:[5,7,9]},
-    {name:'சனி',    color:'#FFB347', dash:'5,2.5', sw:1.6, aspects:[3,7,10]},
-    {name:'செவ்வாய்',color:'#FF5566', dash:'2,2',  sw:1.5, aspects:[4,7,8]},
-  ];
-
-  // Collect all lines
-  const lines=[];
-  for(const ap of ASPECT_PLANETS){
-    const planet=data.planets.find(p=>p.name===ap.name);
-    if(!planet) continue;
-    const fr=planet.rasiIdx;
-    if(!(fr in RASI_CENTRE)) continue;
-    const [fx,fy]=RASI_CENTRE[fr];
-    for(const h of ap.aspects){
-      const ti=(CW_ORDER.indexOf(fr)+h-1)%12;
-      const tr=CW_ORDER[ti];
-      if(!(tr in RASI_CENTRE)) continue;
-      const [tx,ty]=RASI_CENTRE[tr];
-      const seg=clip(fx,fy,tx,ty);
-      if(!seg) continue;
-      lines.push({seg, color:ap.color, dash:ap.dash, sw:ap.sw,
-                  key:`${Math.min(fr,tr)}-${Math.max(fr,tr)}`});
-    }
+    bukthis.push({ lord: bl, startMs: cursor, yrs: bYrs, antharams });
+    cursor += bYrs * MS_PER_YR;
   }
+  return bukthis;
+}
 
-  // Detect overlapping pairs and offset perpendicularly
-  const seen={};
-  for(const ln of lines){
-    seen[ln.key]=(seen[ln.key]||0)+1;
-    ln.overlap=seen[ln.key];
-  }
-  // Re-pass: apply ±2 offset for duplicates
-  const keyCount={};
-  for(const ln of lines){
-    keyCount[ln.key]=(keyCount[ln.key]||0);
-    if(seen[ln.key]>1){
-      const off=keyCount[ln.key]===0?-2.2:2.2;
-      keyCount[ln.key]++;
-      const [x1,y1,x2,y2]=ln.seg;
-      const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy)||1;
-      const px=-dy/len*off,py=dx/len*off;
-      ln.seg=[x1+px,y1+py,x2+px,y2+py];
-    }
-  }
+function msToDate(ms) {
+  const d = new Date(ms);
+  const dd = String(d.getUTCDate()).padStart(2,'0');
+  const mm = String(d.getUTCMonth()+1).padStart(2,'0');
+  const yy = d.getUTCFullYear();
+  return `${dd}/${mm}/${yy}`;
+}
 
-  // Build SVG — unique marker per color
-  const colors=[...new Set(ASPECT_PLANETS.map(a=>a.color))];
-  let defs='<defs>';
-  for(const c of colors){
-    const id=`mk${c.replace('#','')}`;
-    defs+=`<marker id="${id}" markerWidth="6" markerHeight="6"
-      refX="5.5" refY="3" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L0,6 L6,3 z" fill="${c}"/>
-    </marker>`;
-  }
-  defs+='</defs>';
+function renderDasha(containerId, data) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
 
-  let paths='';
-  for(const ln of lines){
-    let [x1,y1,x2,y2]=ln.seg;
-    // Shorten end by 2 units so arrowhead touches border cleanly
-    const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy)||1;
-    const ex=x2-dx/len*2, ey=y2-dy/len*2;
-    // Also pull start back 1.5 units from rasi border
-    const sx=x1+dx/len*1.5, sy=y1+dy/len*1.5;
-    const da=ln.dash?`stroke-dasharray="${ln.dash}"`:'';
-    const mk=`mk${ln.color.replace('#','')}`;
-    paths+=`<line x1="${sx.toFixed(2)}" y1="${sy.toFixed(2)}"
-      x2="${ex.toFixed(2)}" y2="${ey.toFixed(2)}"
-      stroke="${ln.color}" stroke-width="${ln.sw}"
-      stroke-linecap="round" opacity="0.9" ${da}
-      marker-end="url(#${mk})"/>`;
-  }
+  // Find Moon's sidereal longitude
+  const moon = data.planets.find(p => p.name === 'சந்திரன்');
+  if (!moon) { el.innerHTML = '<p style="color:#888;font-size:12px;">சந்திரன் தரவு இல்லை</p>'; return; }
 
-  svg.innerHTML=defs+paths;
+  const { dashas, birthMs, MS_PER_YR } = vimsottariDasha(moon.lon !== undefined ? moon.lon : (moon.rasiIdx*30 + moon.deg), data.jd);
+  const nowMs = Date.now();
+
+  let html = `
+  <div class="dasha-tabs">
+    <button class="dasha-tab active" onclick="switchDashaTab('${containerId}','dasha')">விம்சோத்தரி தசை</button>
+    <button class="dasha-tab" onclick="switchDashaTab('${containerId}','bukthi')">விம்சோத்தரி புத்தி</button>
+    <button class="dasha-tab" onclick="switchDashaTab('${containerId}','antharam')">விம்சோத்தரி அந்தரம்</button>
+  </div>`;
+
+  // ── DASHA TABLE ──
+  html += `<div class="dasha-panel active" id="${containerId}-dasha">
+    <table class="dasha-table">
+      <thead><tr><th>தசை</th><th>தொடக்கம்</th></tr></thead><tbody>`;
+  for (const d of dashas) {
+    const isCurrent = d.startMs <= nowMs && (d.startMs + d.yrs * MS_PER_YR) > nowMs;
+    const cls = isCurrent ? ' class="dasha-current"' : '';
+    html += `<tr${cls}><td>${DASHA_SHORT[d.lord]}</td><td>${msToDate(d.startMs)}</td></tr>`;
+  }
+  html += `</tbody></table></div>`;
+
+  // ── BUKTHI TABLE — show bukthis of current dasha ──
+  const curDasha = dashas.find(d => d.startMs <= nowMs && (d.startMs + d.yrs * MS_PER_YR) > nowMs) || dashas[0];
+  const bukthis  = getBukthiAntharams(curDasha.lord, curDasha.startMs, curDasha.yrs, MS_PER_YR);
+  html += `<div class="dasha-panel" id="${containerId}-bukthi">
+    <div class="dasha-subtitle">${DASHA_SHORT[curDasha.lord]} தசை புத்திகள்</div>
+    <table class="dasha-table">
+      <thead><tr><th>தசை/புத்தி</th><th>தொடக்கம்</th></tr></thead><tbody>`;
+  for (const b of bukthis) {
+    const isCurrent = b.startMs <= nowMs && (b.startMs + b.yrs * MS_PER_YR) > nowMs;
+    const cls = isCurrent ? ' class="dasha-current"' : '';
+    html += `<tr${cls}><td>${DASHA_SHORT[curDasha.lord]}/${DASHA_SHORT[b.lord]}</td><td>${msToDate(b.startMs)}</td></tr>`;
+  }
+  html += `</tbody></table></div>`;
+
+  // ── ANTHARAM TABLE — show antharams of current bukthi ──
+  const curBukthi = bukthis.find(b => b.startMs <= nowMs && (b.startMs + b.yrs * MS_PER_YR) > nowMs) || bukthis[0];
+  html += `<div class="dasha-panel" id="${containerId}-antharam">
+    <div class="dasha-subtitle">${DASHA_SHORT[curDasha.lord]}/${DASHA_SHORT[curBukthi.lord]} புத்தி அந்தரங்கள்</div>
+    <table class="dasha-table">
+      <thead><tr><th>தசை/புத்தி/அந்தரம்</th><th>தொடக்கம்</th></tr></thead><tbody>`;
+  for (const a of curBukthi.antharams) {
+    const isCurrent = a.startMs <= nowMs && (a.startMs + a.yrs * MS_PER_YR) > nowMs;
+    const cls = isCurrent ? ' class="dasha-current"' : '';
+    html += `<tr${cls}><td>${DASHA_SHORT[curDasha.lord]}/${DASHA_SHORT[curBukthi.lord]}/${DASHA_SHORT[a.lord]}</td><td>${msToDate(a.startMs)}</td></tr>`;
+  }
+  html += `</tbody></table></div>`;
+
+  el.innerHTML = html;
+}
+
+function switchDashaTab(containerId, tab) {
+  const panels = document.querySelectorAll(`#${containerId} .dasha-panel`);
+  const tabs   = document.querySelectorAll(`#${containerId} .dasha-tab`);
+  panels.forEach(p => p.classList.remove('active'));
+  tabs.forEach(t => t.classList.remove('active'));
+  document.getElementById(`${containerId}-${tab}`)?.classList.add('active');
+  const tabIdx = ['dasha','bukthi','antharam'].indexOf(tab);
+  if (tabs[tabIdx]) tabs[tabIdx].classList.add('active');
 }
 
 // ═══════════════════════════════════════════════════
@@ -1481,6 +1560,7 @@ function renderAll(jd, isNow, lat = 13.0827, geoLon = 80.2707) {
     renderSIChart('chart-now-lagna',  lagnaData);
     renderPlanetTable('ptable-now-lagna',  lagnaData);
     renderNSaram('nsaram-now-lagna', lagnaData);
+    renderDasha('dasha-now-lagna', lagnaData);
     renderSIChart('chart-now-navamsa', navamsaData);
     renderPlanetTable('ptable-now-navamsa', navamsaData);
     renderStarChart('star-chart-0');
@@ -1489,6 +1569,7 @@ function renderAll(jd, isNow, lat = 13.0827, geoLon = 80.2707) {
     renderSIChart('chart-sel-lagna', lagnaData);
     renderPlanetTable('ptable-sel-lagna', lagnaData);
     renderNSaram('nsaram-sel-lagna', lagnaData);
+    renderDasha('dasha-sel-lagna', lagnaData);
     renderSIChart('chart-sel-navamsa', navamsaData);
     renderPlanetTable('ptable-sel-navamsa', navamsaData);
     renderStarChart('star-chart-2');
