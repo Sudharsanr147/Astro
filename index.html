@@ -578,6 +578,11 @@ tbody tr:hover td { background: #13132A; }
       <span id="now-time-label" style="font-size:11px;color:var(--gold);font-weight:700;"></span>
     </div>
     <div class="section-title">இப்போதைய லக்னம் கட்டம்</div>
+    <div class="asp-legend">
+      <div class="asp-leg-item"><div class="asp-line" style="background:#3DFFAA;height:2px;border-radius:1px;width:20px"></div>குரு (5,7,9)</div>
+      <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dashed #FFB347;"></div>சனி (3,7,10)</div>
+      <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dotted #FF5566;"></div>செவ்வாய் (4,7,8)</div>
+    </div>
     <div class="si-chart" id="chart-now-lagna"></div>
     <div class="legend">
       <div class="leg-item"><div class="leg-dot" style="background:var(--exalt)"></div> உச்சம் (Exaltation)</div>
@@ -596,6 +601,11 @@ tbody tr:hover td { background: #13132A; }
   <!-- ════ TAB 1: NOW NAVAMSA ════ -->
   <div class="page" id="page1">
     <div class="section-title">இப்போதைய நவாம்சம் கட்டம்</div>
+    <div class="asp-legend">
+      <div class="asp-leg-item"><div class="asp-line" style="background:#3DFFAA;height:2px;border-radius:1px;width:20px"></div>குரு (5,7,9)</div>
+      <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dashed #FFB347;"></div>சனி (3,7,10)</div>
+      <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dotted #FF5566;"></div>செவ்வாய் (4,7,8)</div>
+    </div>
     <div class="si-chart" id="chart-now-navamsa"></div>
     <div class="legend">
       <div class="leg-item"><div class="leg-dot" style="background:var(--exalt)"></div> உச்சம்</div>
@@ -682,6 +692,11 @@ tbody tr:hover td { background: #13132A; }
   <!-- ════ TAB 3: DATE NAVAMSA ════ -->
   <div class="page" id="page3">
     <div class="section-title">தேர்ந்த நேர நவாம்சம் கட்டம்</div>
+    <div class="asp-legend">
+      <div class="asp-leg-item"><div class="asp-line" style="background:#3DFFAA;height:2px;border-radius:1px;width:20px"></div>குரு (5,7,9)</div>
+      <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dashed #FFB347;"></div>சனி (3,7,10)</div>
+      <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dotted #FF5566;"></div>செவ்வாய் (4,7,8)</div>
+    </div>
     <div class="si-chart" id="chart-sel-navamsa"></div>
     <div class="legend">
       <div class="leg-item"><div class="leg-dot" style="background:var(--exalt)"></div> உச்சம்</div>
@@ -1180,8 +1195,16 @@ function renderSIChart(containerId, data) {
     <div class="centre-rasi">${RASI[data.lagnaRasi]}<br/>லக்னம்
       <span style="color:var(--degree);font-size:10px;"> ${data.lagnaRawDeg.toFixed(1)}°</span>
     </div>
-    <svg class="aspect-svg" id="${containerId}-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>`;
+  // SVG overlay sits on the si-chart container, covering full grid
+  el.style.position = 'relative';
+  const svgOverlay = document.createElement('svg');
+  svgOverlay.id = containerId + '-svg';
+  svgOverlay.setAttribute('viewBox','0 0 100 100');
+  svgOverlay.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  svgOverlay.setAttribute('preserveAspectRatio','none');
+  svgOverlay.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:10;overflow:visible;';
+  el.appendChild(svgOverlay);
   el.innerHTML += makeCell(3);
   // Row 2
   el.innerHTML += makeCell(9);
@@ -1197,120 +1220,126 @@ function renderSIChart(containerId, data) {
 }
 
 // ── ASPECT DRAWING ──────────────────────────────────────────────
-// The SVG viewBox covers ONLY the centre 2×2 box (25%-75% of chart).
-// Each rasi gets a border-midpoint on the centre box edge.
-// Lines run from border-midpoint to border-midpoint inside that box.
+// SVG viewBox "0 0 100 100" covers the FULL 4×4 chart.
+// Each rasi has a centre point. Arrows run between centres.
+// Lines are clipped to stay within the centre 2×2 box (25-75, 25-75)
+// using Cohen-Sutherland line clipping.
 function drawAspects(containerId, data) {
   const svg = document.getElementById(containerId + '-svg');
   if (!svg) return;
 
-  // SVG viewBox = "0 0 100 100" covers the ENTIRE chart (100×100 units).
-  // Centre box occupies x:25-75, y:25-75.
-  // Each rasi border midpoint = where a line from that rasi would
-  // enter the centre box (midpoint of the touching edge).
-
-  // Border midpoints for each rasi on the centre box:
-  // Top edge (y=25): rasi 11,0,1,2 map to x=12.5,37.5,62.5,87.5
-  //   → entering at x=same, y=25
-  // Bottom edge (y=75): rasi 8,7,6,5 → x=12.5,37.5,62.5,87.5, y=75
-  // Left edge (x=25): rasi 10,9 → x=25, y=37.5,62.5
-  // Right edge (x=75): rasi 3,4 → x=75, y=37.5,62.5
-  const BORDER_PT = {
-    11: [12.5, 25],   0: [37.5, 25],   1: [62.5, 25],   2: [87.5, 25],
-    10: [25,  37.5],                                      3: [75,  37.5],
-     9: [25,  62.5],                                      4: [75,  62.5],
-     8: [12.5, 75],   7: [37.5, 75],   6: [62.5, 75],   5: [87.5, 75]
+  // Centre of each rasi cell in the 100×100 SVG space
+  // Grid: 4 columns × 4 rows, each cell = 25×25 units
+  // Row0(y=0-25):  rasi 11,0,1,2  → centres at y=12.5
+  // Row1(y=25-50): rasi 10,[C],3  → centres at y=37.5
+  // Row2(y=50-75): rasi 9,[C],4   → centres at y=62.5
+  // Row3(y=75-100):rasi 8,7,6,5   → centres at y=87.5
+  const RASI_CENTRE = {
+    11:[12.5,12.5], 0:[37.5,12.5], 1:[62.5,12.5], 2:[87.5,12.5],
+    10:[12.5,37.5],                                 3:[87.5,37.5],
+     9:[12.5,62.5],                                 4:[87.5,62.5],
+     8:[12.5,87.5], 7:[37.5,87.5], 6:[62.5,87.5],  5:[87.5,87.5]
   };
 
-  const CW_ORDER = [11,0,1,2,3,4,5,6,7,8,9,10];
+  // Cohen-Sutherland clip to centre box (x:25-75, y:25-75)
+  const XMIN=25,XMAX=75,YMIN=25,YMAX=75;
+  function code(x,y){
+    return ((x<XMIN)?1:0)|((x>XMAX)?2:0)|((y<YMIN)?4:0)|((y>YMAX)?8:0);
+  }
+  function clip(x1,y1,x2,y2){
+    let c1=code(x1,y1),c2=code(x2,y2);
+    for(let i=0;i<10;i++){
+      if(!(c1|c2)) return [x1,y1,x2,y2]; // both inside
+      if(c1&c2) return null; // both outside same region
+      const cout=c1||c2;
+      let x,y;
+      if(cout&8){x=x1+(x2-x1)*(YMAX-y1)/(y2-y1);y=YMAX;}
+      else if(cout&4){x=x1+(x2-x1)*(YMIN-y1)/(y2-y1);y=YMIN;}
+      else if(cout&2){y=y1+(y2-y1)*(XMAX-x1)/(x2-x1);x=XMAX;}
+      else{y=y1+(y2-y1)*(XMIN-x1)/(x2-x1);x=XMIN;}
+      if(cout===c1){x1=x;y1=y;c1=code(x,y);}
+      else{x2=x;y2=y;c2=code(x,y);}
+    }
+    return null;
+  }
 
-  // Aspect planet definitions
+  const CW_ORDER = [11,0,1,2,3,4,5,6,7,8,9,10];
   const ASPECT_PLANETS = [
-    { name: 'குரு',     color: '#3DFFAA', dash: '',      sw: 1.8, aspects: [5,7,9]  },
-    { name: 'சனி',     color: '#FFB347', dash: '5,3',   sw: 1.6, aspects: [3,7,10] },
-    { name: 'செவ்வாய்', color: '#FF5566', dash: '2,2',  sw: 1.6, aspects: [4,7,8]  },
+    {name:'குரு',    color:'#3DFFAA', dash:'',     sw:1.8, aspects:[5,7,9]},
+    {name:'சனி',    color:'#FFB347', dash:'5,2.5', sw:1.6, aspects:[3,7,10]},
+    {name:'செவ்வாய்',color:'#FF5566', dash:'2,2',  sw:1.5, aspects:[4,7,8]},
   ];
 
-  // Collect all lines first, then detect overlaps and apply offset
-  const lines = [];
-  for (const ap of ASPECT_PLANETS) {
-    const planet = data.planets.find(p => p.name === ap.name);
-    if (!planet) continue;
-    const fromRasi = planet.rasiIdx;
-    if (!(fromRasi in BORDER_PT)) continue;
-
-    for (const aspHouse of ap.aspects) {
-      const fromCWIdx = CW_ORDER.indexOf(fromRasi);
-      const targetCWIdx = (fromCWIdx + aspHouse - 1) % 12;
-      const targetRasi = CW_ORDER[targetCWIdx];
-      if (!(targetRasi in BORDER_PT)) continue;
-
-      lines.push({
-        from: fromRasi, to: targetRasi,
-        color: ap.color, dash: ap.dash, sw: ap.sw,
-        planet: ap.name,
-        x1: BORDER_PT[fromRasi][0], y1: BORDER_PT[fromRasi][1],
-        x2: BORDER_PT[targetRasi][0], y2: BORDER_PT[targetRasi][1],
-        offset: 0
-      });
+  // Collect all lines
+  const lines=[];
+  for(const ap of ASPECT_PLANETS){
+    const planet=data.planets.find(p=>p.name===ap.name);
+    if(!planet) continue;
+    const fr=planet.rasiIdx;
+    if(!(fr in RASI_CENTRE)) continue;
+    const [fx,fy]=RASI_CENTRE[fr];
+    for(const h of ap.aspects){
+      const ti=(CW_ORDER.indexOf(fr)+h-1)%12;
+      const tr=CW_ORDER[ti];
+      if(!(tr in RASI_CENTRE)) continue;
+      const [tx,ty]=RASI_CENTRE[tr];
+      const seg=clip(fx,fy,tx,ty);
+      if(!seg) continue;
+      lines.push({seg, color:ap.color, dash:ap.dash, sw:ap.sw,
+                  key:`${Math.min(fr,tr)}-${Math.max(fr,tr)}`});
     }
   }
 
-  // Detect pairs of lines that share same endpoints (either direction)
-  // and apply perpendicular offset so both are visible
-  for (let i = 0; i < lines.length; i++) {
-    for (let j = i + 1; j < lines.length; j++) {
-      const a = lines[i], b = lines[j];
-      const same = (a.from === b.from && a.to === b.to) ||
-                   (a.from === b.to   && a.to === b.from);
-      if (same) {
-        a.offset = -2.5;
-        b.offset = +2.5;
-      }
+  // Detect overlapping pairs and offset perpendicularly
+  const seen={};
+  for(const ln of lines){
+    seen[ln.key]=(seen[ln.key]||0)+1;
+    ln.overlap=seen[ln.key];
+  }
+  // Re-pass: apply ±2 offset for duplicates
+  const keyCount={};
+  for(const ln of lines){
+    keyCount[ln.key]=(keyCount[ln.key]||0);
+    if(seen[ln.key]>1){
+      const off=keyCount[ln.key]===0?-2.2:2.2;
+      keyCount[ln.key]++;
+      const [x1,y1,x2,y2]=ln.seg;
+      const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy)||1;
+      const px=-dy/len*off,py=dx/len*off;
+      ln.seg=[x1+px,y1+py,x2+px,y2+py];
     }
   }
 
-  // Helper: apply perpendicular offset to a line
-  function offsetLine(x1, y1, x2, y2, off) {
-    if (off === 0) return [x1, y1, x2, y2];
-    const dx = x2 - x1, dy = y2 - y1;
-    const len = Math.sqrt(dx*dx + dy*dy) || 1;
-    const px = -dy / len * off; // perpendicular unit vector * offset
-    const py =  dx / len * off;
-    return [x1+px, y1+py, x2+px, y2+py];
-  }
-
-  // Build SVG — defs first (unique marker per planet color)
-  let defs = '<defs>';
-  const markerDone = new Set();
-  for (const ap of ASPECT_PLANETS) {
-    const mid = `m-${ap.color.replace('#','')}`;
-    if (markerDone.has(mid)) continue;
-    markerDone.add(mid);
-    defs += `<marker id="${mid}" markerWidth="7" markerHeight="7"
-      refX="6" refY="3.5" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L0,7 L7,3.5 z" fill="${ap.color}"/>
+  // Build SVG — unique marker per color
+  const colors=[...new Set(ASPECT_PLANETS.map(a=>a.color))];
+  let defs='<defs>';
+  for(const c of colors){
+    const id=`mk${c.replace('#','')}`;
+    defs+=`<marker id="${id}" markerWidth="6" markerHeight="6"
+      refX="5.5" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L6,3 z" fill="${c}"/>
     </marker>`;
   }
-  defs += '</defs>';
+  defs+='</defs>';
 
-  let paths = '';
-  for (const ln of lines) {
-    const [x1,y1,x2,y2] = offsetLine(ln.x1, ln.y1, ln.x2, ln.y2, ln.offset);
-    // Shorten line slightly so arrowhead lands exactly on border point
-    const dx = x2-x1, dy = y2-y1, len = Math.sqrt(dx*dx+dy*dy)||1;
-    const shrink = 2.5; // units to pull back end point
-    const ex = x2 - dx/len*shrink, ey = y2 - dy/len*shrink;
-    const markerId = `m-${ln.color.replace('#','')}`;
-    const dashAttr = ln.dash ? `stroke-dasharray="${ln.dash}"` : '';
-    paths += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}"
-      x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}"
-      stroke="${ln.color}" stroke-width="${ln.sw}" opacity="0.85"
-      stroke-linecap="round" ${dashAttr}
-      marker-end="url(#${markerId})"/>`;
+  let paths='';
+  for(const ln of lines){
+    let [x1,y1,x2,y2]=ln.seg;
+    // Shorten end by 2 units so arrowhead touches border cleanly
+    const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy)||1;
+    const ex=x2-dx/len*2, ey=y2-dy/len*2;
+    // Also pull start back 1.5 units from rasi border
+    const sx=x1+dx/len*1.5, sy=y1+dy/len*1.5;
+    const da=ln.dash?`stroke-dasharray="${ln.dash}"`:'';
+    const mk=`mk${ln.color.replace('#','')}`;
+    paths+=`<line x1="${sx.toFixed(2)}" y1="${sy.toFixed(2)}"
+      x2="${ex.toFixed(2)}" y2="${ey.toFixed(2)}"
+      stroke="${ln.color}" stroke-width="${ln.sw}"
+      stroke-linecap="round" opacity="0.9" ${da}
+      marker-end="url(#${mk})"/>`;
   }
 
-  svg.innerHTML = defs + paths;
+  svg.innerHTML=defs+paths;
 }
 
 // ═══════════════════════════════════════════════════
