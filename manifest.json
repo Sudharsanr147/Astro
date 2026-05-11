@@ -2,8 +2,8 @@
   "name": "ஜோதிஷம் — தென்னிந்திய ஜாதக கட்டம்",
   "short_name": "ஜோதிஷம்",
   "description": "தென்னிந்திய ஜோதிஷம் — கிரக நிலைகள், லக்னம், நவாம்சம், நட்சத்திர சாரம்",
-  "start_url": "jyothisham_v3.html",
-  "scope": "./",
+  "start_url": "/Astro/index.html",
+  "scope": "/Astro/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait-primary",
@@ -43,7 +43,7 @@
     {
       "name": "இப்போதைய நிலை",
       "short_name": "இப்போது",
-      "url": "jyothisham_v3.html",
+      "url": "/Astro/index.html",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ]
