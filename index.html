@@ -1168,11 +1168,17 @@ function buildChartData(jd, isNavamsa = false, lat = 13.0827, geoLon = 80.2707) 
   const SHORT = {'சூரியன்':'சூ','சந்திரன்':'சந்','செவ்வாய்':'செ','புதன்':'பு','குரு':'கு','சுக்கிரன்':'சு','சனி':'சனி','ராகு':'ரா','கேது':'கே'};
 
   for (const p of PLANET_LIST) {
-    const lon = lons[p];
+    const lon    = lons[p];
     const rasiIdx = isNavamsa ? getNavamsa(lon) : lonToRasi(lon);
-    const deg = isNavamsa ? lonToDeg(lons[p]) : lonToDeg(lon);
+    // For navamsa: deg within the navamsa rasi (position within that 3°20' slice)
+    // For rasi: deg within the rasi
+    const deg = isNavamsa
+      ? (lon - Math.floor(lon / (30/9)) * (30/9)) % (30/9)   // deg within navamsa slice
+      : lonToDeg(lon);
     const retro = isRetrograde(p, jd) && !['சூரியன்','சந்திரன்'].includes(p);
-    const status = retro ? 'retro' : getStatus(p, rasiIdx, deg);
+    // Status uses the actual rasi (not navamsa rasi) for exaltation check
+    const actualRasi = lonToRasi(lon);
+    const status = retro ? 'retro' : getStatus(p, actualRasi, lonToDeg(lon));
     const nat = getNatchatra(lon);
     const sublord = getSubLordForLon(lon);
     planets.push({
