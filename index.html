@@ -1088,14 +1088,19 @@ function getSubLordForLon(lon) {
   return DASHA_ORDER[0];
 }
 
-// Navamsa rasi from longitude (each navamsa = 3°20')
+// Navamsa rasi from longitude — corrected formula
+// Fire signs start Mesha, Earth start Makara, Air start Tula, Water start Kataka
 function getNavamsa(lon) {
-  const navIdx = Math.floor(lon / (360/108));
-  const rasiStart = [0,3,6,9,3,6,9,0,6,9,0,3]; // fire/earth/air/water start
-  const baseRasi = Math.floor(navIdx / 9);
-  const posInGroup = navIdx % 9;
-  const startRasi = rasiStart[baseRasi];
-  return (startRasi + posInGroup) % 12;
+  lon = ((lon % 360) + 360) % 360;
+  const NAVAMSA_START = [
+    0, 9, 6, 3,  // Mesha, Rishabha, Mithuna, Kataka
+    0, 9, 6, 3,  // Simha, Kanni,    Tula,    Vrischika
+    0, 9, 6, 3   // Dhanu, Makara,   Kumbha,  Meena
+  ];
+  const rasi      = Math.floor(lon / 30);
+  const degInRasi = lon - rasi * 30;
+  const navIdx    = Math.floor(degInRasi / (30 / 9)); // 0-8
+  return (NAVAMSA_START[rasi] + navIdx) % 12;
 }
 
 // ═══════════════════════════════════════════════════
