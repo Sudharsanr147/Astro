@@ -705,18 +705,23 @@ tbody tr:hover td { background: #13132A; }
 
 /* ── YEAR / LIST MODALS ── */
 .year-modal, .list-modal {
-  position: fixed; inset: 0; z-index: 300;
-  background: #000000BB;
+  position: fixed; inset: 0;
+  z-index: 500;              /* above bottom nav (z-index:100) and all content */
+  background: #000000CC;
   display: flex; align-items: flex-end; justify-content: center;
 }
 .year-modal-box, .list-modal-box {
   background: linear-gradient(160deg, #141428, #0E0E1E);
   border: 1px solid var(--border-gold);
   border-radius: 20px 20px 0 0;
-  padding: 16px 14px 32px;
-  width: 100%; max-width: 480px;
-  animation: sheetUp 0.3s ease;
+  padding: 16px 14px 20px;
+  width: 100%;
+  max-width: 100%;           /* full width on mobile */
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  animation: sheetUp 0.28s cubic-bezier(0.4,0,0.2,1);
   position: relative;
+  max-height: 80vh;
+  display: flex; flex-direction: column;
 }
 @keyframes sheetUp {
   from { transform: translateY(100%); }
@@ -724,44 +729,50 @@ tbody tr:hover td { background: #13132A; }
 }
 .year-modal-title, .list-modal-title {
   font-size: 14px; font-weight: 700; color: var(--gold-light);
-  text-align: center; margin-bottom: 14px;
+  text-align: center; margin-bottom: 14px; flex-shrink: 0;
 }
 .year-modal-close, .list-modal-close {
   position: absolute; top: 14px; right: 16px;
   font-size: 18px; color: var(--text-dim); cursor: pointer;
-  width: 28px; height: 28px; display: flex;
+  width: 30px; height: 30px; display: flex;
   align-items: center; justify-content: center;
   background: var(--bg3); border-radius: 50%;
 }
 
 /* Decade / Year grid */
 .year-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; overflow-y: auto;
 }
 .decade-cell, .year-cell {
   background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 10px; padding: 12px 6px;
+  border-radius: 10px; padding: 14px 6px;
   text-align: center; cursor: pointer;
-  font-size: 14px; font-weight: 700; color: var(--text);
-  transition: all 0.15s;
+  font-size: 15px; font-weight: 700; color: var(--text);
+  transition: all 0.15s; -webkit-tap-highlight-color: transparent;
 }
-.decade-cell:active, .year-cell:active { background: #1A1A2E; }
-.decade-cell:hover, .year-cell:hover { border-color: var(--border-gold); color: var(--gold-light); }
-.year-cell.is-current { border-color: var(--gold); color: var(--gold-light); background: #1A1400; }
+.decade-cell:active, .year-cell:active { background: #1A1A2E; transform: scale(0.96); }
+.decade-cell.is-current, .year-cell.is-current {
+  border-color: var(--gold); color: var(--gold-light); background: #1A1400;
+}
 
-/* List picker grid (for DD, MM, HH, MIN) */
+/* List picker grid — columns set dynamically per type */
 .list-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
-  max-height: 55vh; overflow-y: auto;
+  display: grid;
+  gap: 7px;
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 2px;
 }
 .list-cell {
   background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 8px; padding: 10px 4px;
+  border-radius: 8px; padding: 12px 4px;
   text-align: center; cursor: pointer;
-  font-size: 14px; font-weight: 700; color: var(--text);
-  transition: all 0.12s;
+  font-size: 15px; font-weight: 700; color: var(--text);
+  transition: all 0.12s; -webkit-tap-highlight-color: transparent;
+  min-height: 44px; display: flex; align-items: center; justify-content: center;
 }
-.list-cell:active { background: #1A1A2E; }
+.list-cell:active { background: #1A1A2E; transform: scale(0.96); }
 .list-cell.is-sel { border-color: var(--gold); color: var(--gold-light); background: #1A1400; }
 
 /* Legacy CSS kept for saved strip compatibility */
@@ -866,32 +877,32 @@ tbody tr:hover td { background: #13132A; }
       <div class="drum-row">
         <div class="drum-col">
           <div class="drum-col-label">நாள்</div>
-          <div class="drum-viewport" id="dv-dd" ontouchstart="drumTouchStart('dd',event)" ontouchmove="drumTouchMove('dd',event)" ontouchend="drumTouchEnd('dd',event)" onclick="drumClick('dd')" onwheel="drumWheel('dd',event)">
+          <div class="drum-viewport" id="dv-dd">
             <div class="drum-items" id="di-dd"></div>
           </div>
         </div>
         <div class="drum-col">
           <div class="drum-col-label">மாதம்</div>
-          <div class="drum-viewport" id="dv-mm" ontouchstart="drumTouchStart('mm',event)" ontouchmove="drumTouchMove('mm',event)" ontouchend="drumTouchEnd('mm',event)" onclick="drumClick('mm')" onwheel="drumWheel('mm',event)">
+          <div class="drum-viewport" id="dv-mm">
             <div class="drum-items" id="di-mm"></div>
           </div>
         </div>
         <div class="drum-col drum-col-yr">
           <div class="drum-col-label">ஆண்டு</div>
-          <div class="drum-viewport" id="dv-yr" ontouchstart="drumTouchStart('yr',event)" ontouchmove="drumTouchMove('yr',event)" ontouchend="drumTouchEnd('yr',event)" onclick="drumClick('yr')" onwheel="drumWheel('yr',event)">
+          <div class="drum-viewport" id="dv-yr">
             <div class="drum-items" id="di-yr"></div>
           </div>
         </div>
         <div class="drum-sep">·</div>
         <div class="drum-col">
           <div class="drum-col-label">மணி</div>
-          <div class="drum-viewport" id="dv-hh" ontouchstart="drumTouchStart('hh',event)" ontouchmove="drumTouchMove('hh',event)" ontouchend="drumTouchEnd('hh',event)" onclick="drumClick('hh')" onwheel="drumWheel('hh',event)">
+          <div class="drum-viewport" id="dv-hh">
             <div class="drum-items" id="di-hh"></div>
           </div>
         </div>
         <div class="drum-col">
           <div class="drum-col-label">நிமி</div>
-          <div class="drum-viewport" id="dv-mn" ontouchstart="drumTouchStart('mn',event)" ontouchmove="drumTouchMove('mn',event)" ontouchend="drumTouchEnd('mn',event)" onclick="drumClick('mn')" onwheel="drumWheel('mn',event)">
+          <div class="drum-viewport" id="dv-mn">
             <div class="drum-items" id="di-mn"></div>
           </div>
         </div>
@@ -912,24 +923,6 @@ tbody tr:hover td { background: #13132A; }
           <option value="8.7139,77.7567">Nagercoil</option>
         </select>
         <button class="drum-calc-btn" onclick="drumCalc()">கணக்கிடு ▶</button>
-      </div>
-    </div>
-
-    <!-- YEAR PICKER MODAL -->
-    <div class="year-modal" id="year-modal" style="display:none">
-      <div class="year-modal-box">
-        <div class="year-modal-title" id="year-modal-title">தசாப்தம் தேர்வு செய்க</div>
-        <div class="year-modal-close" onclick="closeYearModal()">✕</div>
-        <div class="year-grid" id="year-grid"></div>
-      </div>
-    </div>
-
-    <!-- LIST PICKER MODAL -->
-    <div class="list-modal" id="list-modal" style="display:none">
-      <div class="list-modal-box">
-        <div class="list-modal-title" id="list-modal-title"></div>
-        <div class="list-modal-close" onclick="closeListModal()">✕</div>
-        <div class="list-grid" id="list-grid"></div>
       </div>
     </div>
 
@@ -1986,20 +1979,74 @@ function openDrumPicker(type) {
   openListPicker(type);
 }
 
-// List picker (DD, MM, HH, MN)
+// ── DRUM EVENT LISTENERS (passive:false required for preventDefault) ──
+function initAllDrumListeners() {
+  ['dd','mm','yr','hh','mn'].forEach(type => {
+    const vp = document.getElementById('dv-' + type);
+    if (!vp) return;
+
+    let startY = 0, lastY = 0, moved = false;
+
+    vp.addEventListener('touchstart', e => {
+      startY = e.touches[0].clientY;
+      lastY  = e.touches[0].clientY;
+      moved  = false;
+    }, {passive: true});
+
+    // passive:false is essential — allows e.preventDefault() to stop page scroll
+    vp.addEventListener('touchmove', e => {
+      const dy = lastY - e.touches[0].clientY;
+      if (Math.abs(dy) > 6) {
+        e.preventDefault();   // stop page scroll — only works with passive:false
+        e.stopPropagation();  // stop swipe detection
+        moved = true;
+        scrollDrum(type, dy > 0 ? 1 : -1);
+        lastY = e.touches[0].clientY;
+      }
+    }, {passive: false});
+
+    vp.addEventListener('touchend', () => {
+      if (!moved) openDrumPicker(type);
+    }, {passive: true});
+
+    // Mouse wheel for desktop
+    vp.addEventListener('wheel', e => {
+      e.preventDefault();
+      scrollDrum(type, e.deltaY > 0 ? 1 : -1);
+    }, {passive: false});
+
+    // Desktop click (no touch device)
+    if (!('ontouchstart' in window)) {
+      vp.addEventListener('click', () => openDrumPicker(type));
+    }
+  });
+}
+
+// List picker — dynamic columns per type
 function openListPicker(type) {
   const modal = document.getElementById('list-modal');
   const grid  = document.getElementById('list-grid');
   const title = document.getElementById('list-modal-title');
-  const labels = { dd:'நாள் தேர்வு', mm:'மாதம் தேர்வு', hh:'மணி தேர்வு', mn:'நிமிடம் தேர்வு' };
+  const labels = {dd:'நாள் தேர்வு', mm:'மாதம் தேர்வு', hh:'மணி தேர்வு', mn:'நிமிடம் தேர்வு'};
   title.textContent = labels[type] || '';
+
+  // Columns per type: months need labels so 3 cols; others can be 4-5
+  const cols = type === 'mm' ? 3 : type === 'mn' ? 5 : 4;
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
   const vals = DRUM_VALS[type];
   grid.innerHTML = vals.map(v => {
     const lbl = drumLabel(type, v);
     const sel = v === DS[type] ? ' is-sel' : '';
     return `<div class="list-cell${sel}" onclick="pickListVal('${type}',${v})">${lbl}</div>`;
   }).join('');
+
   modal.style.display = 'flex';
+  // Scroll selected item into view
+  requestAnimationFrame(() => {
+    const selEl = grid.querySelector('.is-sel');
+    if (selEl) selEl.scrollIntoView({block:'center', behavior:'smooth'});
+  });
 }
 function pickListVal(type, val) {
   DS[type] = val;
@@ -2444,6 +2491,8 @@ window.addEventListener('load', () => {
   DS.hh = ist.getUTCHours();
   DS.mn = ist.getUTCMinutes();
   renderAllDrums();
+  // Attach drum touch/wheel listeners AFTER DOM is ready
+  initAllDrumListeners();
   // Tabs 0 & 1: current time chart
   refreshNow();
   // Tabs 2 & 3: current time chart (default)
@@ -2454,5 +2503,23 @@ window.addEventListener('load', () => {
 });
 
 </script>
+<!-- YEAR PICKER MODAL — direct child of body, outside any transform -->
+<div class="year-modal" id="year-modal" style="display:none">
+  <div class="year-modal-box">
+    <div class="year-modal-title" id="year-modal-title">தசாப்தம் தேர்வு செய்க</div>
+    <div class="year-modal-close" onclick="closeYearModal()">✕</div>
+    <div class="year-grid" id="year-grid"></div>
+  </div>
+</div>
+
+<!-- LIST PICKER MODAL — direct child of body, outside any transform -->
+<div class="list-modal" id="list-modal" style="display:none">
+  <div class="list-modal-box">
+    <div class="list-modal-title" id="list-modal-title"></div>
+    <div class="list-modal-close" onclick="closeListModal()">✕</div>
+    <div class="list-grid" id="list-grid"></div>
+  </div>
+</div>
+
 </body>
 </html>
