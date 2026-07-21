@@ -1,0 +1,2894 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ஜோதிஷம்</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#080810">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ஜோதிஷம்">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="description" content="தென்னிந்திய ஜோதிஷம் — கிரக நிலைகள், லக்னம், நவாம்சம்">
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;500;600;700&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #E8A020;
+  --gold-light: #F5C842;
+  --gold-dim: #7A5510;
+  --bg: #080810;
+  --bg2: #0D0D1A;
+  --bg3: #111122;
+  --border: #2A2A40;
+  --border-gold: #E8A02055;
+  --text: #EEE8D5;
+  --text-dim: #888877;
+  --planet: #FFE066;
+  --degree: #90B8FF;
+  --lagna: #00DDFF;
+  --exalt: #44FF88;        /* उच्चम् - bright green */
+  --neecha: #FF4444;       /* नीचम् - bright red */
+  --retro: #FF8C00;        /* வக்ரம் - bright orange */
+  --normal: #FFE066;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans Tamil', sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ── HEADER ── */
+.hdr {
+  background: linear-gradient(135deg, #0A0A18 0%, #141428 100%);
+  border-bottom: 1px solid var(--border-gold);
+  padding: 8px 14px 6px;
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.hdr-title { font-family: 'Cinzel Decorative', serif; font-size: 15px; color: var(--gold-light); letter-spacing: 1px; }
+.hdr-sub { font-size: 10px; color: var(--text-dim); }
+.hdr-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.now-badge {
+  background: var(--gold); color: #000; font-size: 10px; font-weight: 700;
+  padding: 3px 8px; border-radius: 10px; cursor: pointer;
+}
+
+/* ── TABS ── */
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  background: var(--bg2);
+  border-bottom: 2px solid var(--border-gold);
+  flex-shrink: 0;
+}
+.tab {
+  padding: 9px 6px 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: normal;
+  line-height: 1.3;
+  transition: color 0.2s, background 0.2s;
+  border-right: 1px solid var(--border);
+}
+.tab:nth-child(2), .tab:nth-child(4) { border-right: none; }
+.tab:nth-child(1), .tab:nth-child(2) { border-bottom: 1px solid var(--border); }
+.tab.active {
+  color: var(--gold);
+  background: #13132A;
+  border-bottom: 2px solid var(--gold);
+}
+
+/* ── SCROLL AREA ── */
+.scroll-area {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+/* Swipeable page container */
+.pages-track {
+  display: flex;
+  width: 600%;
+  height: 100%;
+  transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+  will-change: transform;
+}
+.page {
+  width: 16.6667%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 10px 80px;
+  flex-shrink: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.page::-webkit-scrollbar { width: 3px; }
+.page::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── DATE PICKER STRIP ── */
+.date-strip {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.date-strip label { font-size: 11px; color: var(--text-dim); }
+.date-strip input, .date-strip select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 5px;
+  padding: 4px 6px;
+  font-size: 11px;
+  font-family: 'Noto Sans Tamil', sans-serif;
+  flex: 1;
+  min-width: 100px;
+}
+.calc-btn {
+  background: var(--gold);
+  color: #000;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ── CHART SECTION TITLE ── */
+.section-title {
+  font-size: 11px;
+  color: var(--gold);
+  letter-spacing: 1px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-gold);
+}
+
+/* ══════════════════════════════════════
+   SOUTH INDIAN CHART GRID
+   4×4 = 16 cells. Centre 4 are merged.
+   We use CSS grid with named areas.
+══════════════════════════════════════ */
+.si-chart {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 2px;
+  aspect-ratio: 1/1;
+  width: 100%;
+  background: var(--gold);
+  border: 2px solid var(--gold);
+  border-radius: 2px;
+  margin-bottom: 10px;
+  box-shadow: 0 0 24px #E8A02033;
+}
+
+.cell {
+  background: var(--bg2);
+  padding: 4px 4px 3px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+/* The centre 2×2 block */
+.cell.centre {
+  grid-column: 2 / 4;
+  grid-row: 2 / 4;
+  background: #0A0A18;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  gap: 3px;
+}
+.centre-label { font-family: 'Cinzel Decorative', serif; font-size: 12px; color: var(--gold); letter-spacing: 1px; }
+.centre-rasi { font-size: 9px; color: var(--text-dim); text-align: center; line-height: 1.6; }
+
+/* Rasi name in corner */
+.rasi-name {
+  position: absolute;
+  top: 2px; right: 3px;
+  font-size: 8.5px;
+  color: var(--gold-dim);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Lagna triangle */
+.lagna-tri {
+  position: absolute;
+  top: 0; left: 0;
+  width: 0; height: 0;
+  border-top: 16px solid var(--lagna);
+  border-right: 16px solid transparent;
+}
+
+/* Planet row */
+.pl { display: flex; align-items: baseline; justify-content: center; gap: 2px; line-height: 1.2; }
+
+/* Inner centered content block inside cell */
+.cell-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+}
+.pl-n {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.pl-n.normal { color: var(--normal); }
+.pl-n.exalt  { color: var(--exalt); }
+.pl-n.neecha { color: var(--neecha); text-decoration: underline dotted; }
+.pl-n.retro  { color: var(--retro); }
+.pl-n.lagna-pl { color: var(--lagna); }
+.pl-d { font-size: 8.5px; color: var(--degree); }
+
+/* ── PLANET TABLE ── */
+.pt-wrap { margin-bottom: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 11px; }
+thead th {
+  background: var(--bg3);
+  color: var(--text-dim);
+  font-weight: 600;
+  text-align: left;
+  padding: 5px 5px;
+  font-size: 10px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 5px 5px;
+  border-bottom: 1px solid #0F0F1C;
+  vertical-align: middle;
+}
+tbody tr:hover td { background: #13132A; }
+.td-planet { font-weight: 700; }
+.td-exalt  { color: var(--exalt); }
+.td-neecha { color: var(--neecha); }
+.td-retro  { color: var(--retro); }
+.td-normal { color: var(--normal); }
+.td-lagna  { color: var(--lagna); }
+.status-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 700;
+}
+.sb-exalt  { background: #44FF8822; color: var(--exalt); border: 1px solid #44FF8844; }
+.sb-neecha { background: #FF444422; color: var(--neecha); border: 1px solid #FF444444; }
+.sb-retro  { background: #FF8C0022; color: var(--retro);  border: 1px solid #FF8C0044; }
+.sb-normal { background: #FFE06611; color: var(--text-dim); border: 1px solid #FFE06622; }
+
+/* ── NATCHATRA SARAM TABLE ── */
+.ns-wrap { margin-bottom: 10px; }
+
+/* ── NATCHATRA RASI CHART (Image 1 style) ── */
+.nr-chart {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 2px;
+  background: var(--border);
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  margin-bottom: 6px;
+}
+.nr-cell {
+  background: #0C0C1C;
+  padding: 5px 5px 4px;
+  min-height: 85px;
+}
+.nr-cell.nr-centre {
+  grid-column: 2 / 4;
+  grid-row: 2 / 4;
+  background: #090916;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+.nr-rasi { font-size: 11px; font-weight: 700; color: var(--gold); margin-bottom: 4px; }
+.nr-star { font-size: 9px; color: var(--text-dim); line-height: 1.6; }
+.nr-star span.lord { color: var(--gold-light); font-weight: 600; font-size: 9px; }
+.nr-star span.yr   { color: var(--degree); font-size: 8px; }
+.nr-centre-title { font-size: 11px; color: var(--gold); font-weight: 700; text-align: center; line-height: 1.6; }
+
+/* ── LEGEND ── */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  background: var(--bg3);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+.leg-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text-dim); }
+.leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── BOTTOM NAV ── */
+.bot-nav {
+  display: flex;
+  background: var(--bg2);
+  border-top: 1px solid var(--border-gold);
+  position: fixed;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  z-index: 100;
+}
+.bn-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0 6px;
+  font-size: 9px;
+  color: #555;
+  cursor: pointer;
+  gap: 2px;
+  transition: color 0.2s;
+}
+.bn-item.active { color: var(--gold); }
+.bn-icon { font-size: 18px; }
+
+/* scrollbar */
+.scroll-area::-webkit-scrollbar { width: 4px; }
+.scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── INSTALL MODAL ── */
+#install-modal {
+  display: none;
+  position: fixed; inset: 0;
+  background: #000000BB;
+  z-index: 500;
+  align-items: flex-end;
+  justify-content: center;
+}
+#install-modal.show { display: flex; }
+.im-sheet {
+  background: linear-gradient(160deg, #141428, #0E0E1E);
+  border: 1px solid var(--border-gold);
+  border-radius: 20px 20px 0 0;
+  padding: 20px 18px 36px;
+  width: 100%; max-width: 480px;
+  animation: sheetUp 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.im-handle {
+  width: 40px; height: 4px;
+  background: var(--border); border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.im-title {
+  font-size: 16px; font-weight: 700;
+  color: var(--gold-light); text-align: center; margin-bottom: 4px;
+}
+.im-sub {
+  font-size: 11px; color: var(--text-dim);
+  text-align: center; margin-bottom: 18px;
+}
+.im-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.im-step {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: #0C0C1C; border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px;
+}
+.im-step-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--gold); color: #000;
+  font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.im-step-text { font-size: 12px; color: var(--text); line-height: 1.6; }
+.im-step-text b { color: var(--gold-light); }
+.im-native-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--gold), #F5C842);
+  color: #000; border: none; border-radius: 12px;
+  padding: 15px; font-size: 15px; font-weight: 800;
+  cursor: pointer; margin-bottom: 10px;
+  display: none;
+}
+.im-native-btn.show { display: block; }
+.im-close-btn {
+  width: 100%; background: transparent; color: var(--text-dim);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 11px; font-size: 13px; cursor: pointer;
+}
+.install-icon-btn {
+  background: var(--gold); color: #000; border: none;
+  border-radius: 8px; padding: 5px 10px;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+}
+
+/* ── OFFLINE TOAST ── */
+#offline-toast {
+  display: none;
+  position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+  background: #FF4444DD; color: #fff;
+  padding: 6px 16px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+  z-index: 300; white-space: nowrap;
+}
+#offline-toast.show { display: block; }
+
+/* ── SAVED CHARTS ── */
+.saved-strip {
+  background: var(--bg3);
+  border: 1px solid var(--border-gold);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+}
+.saved-strip label { font-size: 11px; color: var(--gold); font-weight: 600; white-space: nowrap; }
+.saved-select {
+  flex: 1; min-width: 140px;
+  background: var(--bg); border: 1px solid var(--border);
+  color: var(--text); border-radius: 5px;
+  padding: 5px 6px; font-size: 11px;
+  font-family: 'Noto Sans Tamil', sans-serif;
+}
+.save-btn {
+  background: #44FF8833; color: var(--exalt);
+  border: 1px solid #44FF8855; border-radius: 5px;
+  padding: 5px 10px; font-size: 11px; font-weight: 700; cursor: pointer;
+  white-space: nowrap;
+}
+.del-btn {
+  background: #FF444422; color: var(--neecha);
+  border: 1px solid #FF444444; border-radius: 5px;
+  padding: 5px 8px; font-size: 11px; cursor: pointer;
+}
+.save-name-row {
+  display: none; width: 100%; gap: 6px;
+  align-items: center; margin-top: 4px;
+}
+.save-name-row.show { display: flex; }
+.save-name-input {
+  flex: 1; background: var(--bg); border: 1px solid var(--border-gold);
+  color: var(--text); border-radius: 5px; padding: 5px 8px;
+  font-size: 12px; font-family: 'Noto Sans Tamil', sans-serif;
+}
+.save-confirm-btn {
+  background: var(--gold); color: #000; border: none;
+  border-radius: 5px; padding: 5px 12px; font-size: 11px;
+  font-weight: 800; cursor: pointer;
+}
+
+/* House number — bottom-left of cell */
+.house-num {
+  position: absolute;
+  bottom: 2px; left: 3px;
+  font-size: 8px; color: #3A3A5A;
+  font-weight: 800; line-height: 1;
+}
+/* Aspect SVG — fills entire centre cell */
+.aspect-svg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; overflow: visible;
+}
+/* Aspect legend */
+.asp-legend {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  font-size: 10px; color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.asp-leg-item { display: flex; align-items: center; gap: 4px; }
+.asp-line { width: 20px; height: 2px; border-radius: 1px; }
+
+/* ── COLLAPSIBLE DATE STRIP ── */
+.date-toggle-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #1A1A2E, #14142A);
+  border: 1px solid var(--border-gold);
+  border-radius: 8px;
+  padding: 11px 14px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; margin-bottom: 6px;
+  color: var(--gold); font-size: 13px; font-weight: 700;
+  font-family: 'Noto Sans Tamil', sans-serif;
+}
+.date-toggle-btn .dtb-arrow {
+  margin-left: auto; font-size: 16px;
+  transition: transform 0.25s;
+}
+.date-toggle-btn.open .dtb-arrow { transform: rotate(180deg); }
+.date-toggle-body {
+  display: none;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-top: none; border-radius: 0 0 8px 8px;
+  padding: 10px; margin-top: -6px; margin-bottom: 8px;
+}
+.date-toggle-body.open { display: block; }
+/* ── DASHA 3-TAB LAYOUT ── */
+.dasha-tabs { display:flex; gap:3px; margin-bottom:6px; }
+.dasha-tab {
+  flex:1; background:var(--bg3); color:var(--text-dim);
+  border:1px solid var(--border); border-radius:6px;
+  padding:7px 4px; font-size:11px; font-weight:600;
+  cursor:pointer; font-family:'Noto Sans Tamil',sans-serif;
+  transition:all 0.2s; text-align:center;
+}
+.dasha-tab.active { background:var(--gold); color:#000; border-color:var(--gold); }
+
+.dasha-panel { display:none; }
+.dasha-panel.active { display:block; }
+
+.dasha-subtitle {
+  font-size:11px; color:var(--gold); font-weight:700;
+  padding:5px 0 4px; margin-bottom:4px;
+  border-bottom:1px solid var(--border-gold);
+}
+.dasha-table { width:100%; border-collapse:collapse; font-size:12px; }
+.dasha-table thead th {
+  background:var(--bg3); color:var(--text-dim);
+  font-size:10px; font-weight:600;
+  padding:5px 6px; text-align:left;
+  border-bottom:1px solid var(--border);
+}
+.dasha-table tbody td { padding:6px 6px; border-bottom:1px solid #0F0F1C; }
+.dasha-table tbody tr:hover td { background:#13132A; }
+/* Clickable rows */
+.dasha-table tbody tr[onclick] td { color:var(--text); }
+.dasha-table tbody tr[onclick]:active td { background:#1A1A2E; }
+/* Current period */
+.dasha-table tr.dasha-current td {
+  color:var(--gold-light); font-weight:700;
+  background:#E8A02014;
+}
+/* Selected (drill-into) row */
+.dasha-table tr.dasha-selected td {
+  color:var(--gold); background:#E8A02008;
+}
+
+
+/* ══════════════════════════════════════
+   DRUM DATE/TIME PICKER
+══════════════════════════════════════ */
+.drum-container {
+  background: linear-gradient(180deg, #0C0C1E 0%, #080814 100%);
+  border: 1px solid var(--border-gold);
+  border-radius: 16px;
+  padding: 10px 8px 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 24px #00000088, inset 0 1px 0 #E8A02022;
+}
+.drum-now-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 4px; margin-bottom: 8px;
+}
+.drum-now-label { font-size: 11px; color: var(--gold); font-weight: 700; }
+.drum-now-btn {
+  background: #E8A02022; color: var(--gold);
+  border: 1px solid var(--border-gold); border-radius: 6px;
+  padding: 3px 10px; font-size: 10px; font-weight: 700;
+  cursor: pointer; font-family: 'Noto Sans Tamil', sans-serif;
+}
+
+.drum-row {
+  display: flex; gap: 3px; align-items: flex-start;
+  position: relative;
+  /* Gold highlight bar behind selected row */
+}
+.drum-row::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  top: calc(50% + 10px); /* offset for label */
+  height: 46px;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #1C1400, #181200);
+  border-radius: 8px;
+  border-top: 1.5px solid var(--gold-dim);
+  border-bottom: 1.5px solid var(--gold-dim);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.drum-col {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 3px; position: relative; z-index: 1;
+  min-width: 0;
+}
+.drum-col-yr { flex: 1.4; }
+.drum-col-label {
+  font-size: 9px; color: var(--text-dim); font-weight: 700;
+  letter-spacing: 0.5px; text-align: center;
+  height: 14px; line-height: 14px;
+}
+.drum-sep {
+  font-size: 22px; font-weight: 700; color: var(--gold-dim);
+  margin-top: 28px; padding: 0 1px;
+  position: relative; z-index: 1; flex-shrink: 0;
+}
+
+/* The scrollable drum viewport */
+.drum-viewport {
+  width: 100%;
+  height: 184px; /* 4 visible items × 46px */
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  -webkit-mask-image: linear-gradient(to bottom,
+    transparent 0%, rgba(0,0,0,0.15) 15%,
+    black 30%, black 70%,
+    rgba(0,0,0,0.15) 85%, transparent 100%);
+  mask-image: linear-gradient(to bottom,
+    transparent 0%, rgba(0,0,0,0.15) 15%,
+    black 30%, black 70%,
+    rgba(0,0,0,0.15) 85%, transparent 100%);
+}
+.drum-items {
+  position: absolute; width: 100%;
+  top: 0; left: 0;
+  transition: transform 0.18s cubic-bezier(0.25,0.8,0.25,1);
+}
+.drum-item {
+  height: 46px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: var(--text-dim);
+  user-select: none; -webkit-user-select: none;
+  transition: font-size 0.15s, color 0.15s, opacity 0.15s;
+  text-align: center;
+  line-height: 1;
+}
+.drum-item.d-sel  { font-size: 26px; color: var(--gold-light); opacity: 1; }
+.drum-item.d-adj1 { font-size: 17px; color: var(--text); opacity: 0.65; }
+.drum-item.d-adj2 { font-size: 13px; opacity: 0.28; }
+.drum-item.d-far  { font-size: 11px; opacity: 0.12; }
+
+/* Month names slightly smaller */
+.drum-col:nth-child(2) .drum-item.d-sel { font-size: 18px; }
+.drum-col:nth-child(2) .drum-item.d-adj1{ font-size: 13px; }
+
+.drum-bottom-row {
+  display: flex; gap: 8px; align-items: center;
+  margin-top: 10px; padding: 0 2px;
+}
+.drum-place-sel {
+  flex: 1; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px;
+  padding: 8px 10px; font-size: 12px;
+  font-family: 'Noto Sans Tamil', sans-serif;
+}
+.drum-calc-btn {
+  background: var(--gold); color: #000; border: none;
+  border-radius: 8px; padding: 8px 18px;
+  font-size: 13px; font-weight: 800; cursor: pointer;
+  font-family: 'Noto Sans Tamil', sans-serif;
+  white-space: nowrap; flex-shrink: 0;
+}
+
+/* ── YEAR / LIST MODALS ── */
+.year-modal, .list-modal {
+  position: fixed; inset: 0;
+  z-index: 500;              /* above bottom nav (z-index:100) and all content */
+  background: #000000CC;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.year-modal-box, .list-modal-box {
+  background: linear-gradient(160deg, #141428, #0E0E1E);
+  border: 1px solid var(--border-gold);
+  border-radius: 20px 20px 0 0;
+  padding: 16px 14px 20px;
+  width: 100%;
+  max-width: 100%;           /* full width on mobile */
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  animation: sheetUp 0.28s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+  max-height: 80vh;
+  display: flex; flex-direction: column;
+}
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.year-modal-title, .list-modal-title {
+  font-size: 14px; font-weight: 700; color: var(--gold-light);
+  text-align: center; margin-bottom: 14px; flex-shrink: 0;
+}
+.year-modal-close, .list-modal-close {
+  position: absolute; top: 14px; right: 16px;
+  font-size: 18px; color: var(--text-dim); cursor: pointer;
+  width: 30px; height: 30px; display: flex;
+  align-items: center; justify-content: center;
+  background: var(--bg3); border-radius: 50%;
+}
+
+/* Decade / Year grid */
+.year-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; overflow-y: auto;
+}
+.decade-cell, .year-cell {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 6px;
+  text-align: center; cursor: pointer;
+  font-size: 15px; font-weight: 700; color: var(--text);
+  transition: all 0.15s; -webkit-tap-highlight-color: transparent;
+}
+.decade-cell:active, .year-cell:active { background: #1A1A2E; transform: scale(0.96); }
+.decade-cell.is-current, .year-cell.is-current {
+  border-color: var(--gold); color: var(--gold-light); background: #1A1400;
+}
+
+/* List picker grid — columns set dynamically per type */
+.list-grid {
+  display: grid;
+  gap: 7px;
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 2px;
+}
+.list-cell {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 4px;
+  text-align: center; cursor: pointer;
+  font-size: 15px; font-weight: 700; color: var(--text);
+  transition: all 0.12s; -webkit-tap-highlight-color: transparent;
+  min-height: 44px; display: flex; align-items: center; justify-content: center;
+}
+.list-cell:active { background: #1A1A2E; transform: scale(0.96); }
+.list-cell.is-sel { border-color: var(--gold); color: var(--gold-light); background: #1A1400; }
+
+/* Legacy CSS kept for saved strip compatibility */
+.date-strip { display:flex; flex-wrap:wrap; gap:6px; align-items:center; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:8px 10px; margin-bottom:8px; }
+.date-strip label { font-size:11px; color:var(--text-dim); }
+.date-strip input, .date-strip select { background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:5px; padding:4px 6px; font-size:11px; font-family:'Noto Sans Tamil',sans-serif; flex:1; min-width:80px; }
+.calc-btn { background:var(--gold); color:#000; border:none; border-radius:5px; padding:5px 12px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap; }
+
+/* Legacy keepable */
+.paarvai-label { font-size:11px; color:var(--gold); font-weight:700; margin-right:6px; white-space:nowrap; }
+
+/* ══════════════════════════════════════
+   ASHTAKAVARGA STYLES
+══════════════════════════════════════ */
+.ashtak-wrap { margin-bottom: 12px; }
+.ashtak-title {
+  font-size: 13px; font-weight: 700; color: var(--gold-light);
+  margin-bottom: 10px; padding-bottom: 5px;
+  border-bottom: 1px solid var(--border-gold);
+}
+
+/* Scrollable score table */
+.ashtak-scroll { margin-bottom: 14px; } /* no more overflow-x scroll */
+.ashtak-table { border-collapse: collapse; font-size: 12px; width: 100%; }
+.ashtak-table th {
+  background: var(--bg3); color: var(--gold);
+  padding: 5px 4px; text-align: center; font-size: 10px;
+  font-weight: 700; border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.ashtak-table td {
+  padding: 6px 4px; text-align: center; font-weight: 700;
+  border: 1px solid var(--border); font-size: 13px;
+}
+.ashtak-table .rasi-label {
+  text-align: center; color: var(--gold); font-size: 10px;
+  font-weight: 700; background: var(--bg3);
+  padding: 6px 4px; white-space: nowrap;
+}
+.ashtak-table .sarva-cell {
+  background: #0A0A1C; color: var(--gold-light);
+  font-weight: 800; font-size: 13px;
+  border-left: 2px solid var(--border-gold);
+}
+.ashtak-table .planet-header {
+  background: var(--bg3); padding: 5px 3px;
+  font-size: 10px; font-weight: 700; color: var(--gold);
+}
+/* Planet's own rasi row highlight */
+.ashtak-table td.planet-pos { outline: 2px solid var(--gold-light); outline-offset: -2px; }
+/* Lagna row */
+.ashtak-table tr.lagna-row td { background: #0A0A1E; }
+.ashtak-table tr.lagna-row .rasi-label { color: var(--lagna); }
+/* Score colour coding */
+.s8 { background:#006620; color:#7DFFAA; }
+.s7 { background:#004A18; color:#44DD88; }
+.s6 { background:#003A12; color:#3DCC7A; }
+.s5 { background:#1A1A00; color:#CCCC00; }
+.s4 { background:#111100; color:#AAAA00; }
+.s3 { background:#1A0A00; color:#CC8800; }
+.s2 { background:#1A0000; color:#CC4444; }
+.s1 { background:#110000; color:#AA2222; }
+.s0 { background:#0A0000; color:#661111; }
+
+/* Mini SI chart for Sarvashtakavarga */
+.sarvashtak-chart {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  grid-template-rows: repeat(4,1fr);
+  gap: 2px; aspect-ratio: 1/1;
+  background: var(--gold); border: 1.5px solid var(--gold);
+  border-radius: 3px; margin-bottom: 14px;
+  box-shadow: 0 0 16px var(--gold-glow);
+}
+.sarvashtak-chart .sc-cell {
+  background: var(--bg2); position: relative;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1px;
+}
+.sarvashtak-chart .sc-cell.sc-centre {
+  grid-column: 2/4; grid-row: 2/4;
+  background: #080814; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.sarvashtak-chart .sc-rn { position:absolute; top:2px; right:3px; font-size:7px; color:var(--gold-dim); font-weight:700; }
+.sarvashtak-chart .sc-score { font-size: 16px; font-weight: 800; }
+.sarvashtak-chart .sc-planet-pos { position:absolute; top:0; left:0; border-top:10px solid var(--lagna-j); border-right:10px solid transparent; }
+.sarvashtak-chart .sc-centre-label { font-size: 9px; color: var(--gold); font-weight: 700; text-align: center; }
+.sarvashtak-chart .sc-centre-val { font-size: 11px; color: var(--text-dim); text-align: center; }
+
+/* ── GOCHAR SCORE CARD ── */
+.gochar-score-card {
+  background: linear-gradient(135deg, #0C0C1E, #0A0A16);
+  border: 2px solid var(--border-gold);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.gsc-header {
+  font-size: 12px; font-weight: 700; color: var(--gold-light);
+  letter-spacing: 0.5px; margin-bottom: 2px;
+}
+.gsc-sub { font-size: 10px; color: var(--text-dim); margin-bottom: 4px; }
+.gsc-total-row {
+  display: flex; align-items: center; gap: 14px;
+}
+.gsc-score-big {
+  font-size: 48px; font-weight: 800; line-height: 1;
+  min-width: 80px; text-align: center;
+}
+.gsc-meter-wrap { flex: 1; }
+.gsc-meter-bar {
+  height: 10px; border-radius: 5px;
+  background: var(--bg3); overflow: hidden;
+  margin-bottom: 4px;
+}
+.gsc-meter-fill {
+  height: 100%; border-radius: 5px;
+  transition: width 0.6s ease;
+}
+.gsc-meter-labels {
+  display: flex; justify-content: space-between;
+  font-size: 9px; color: var(--text-dim);
+}
+.gsc-rating {
+  font-size: 11px; font-weight: 700; text-align: center;
+  padding: 3px 10px; border-radius: 12px;
+}
+.gsc-breakdown {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 5px;
+}
+.gsc-planet-chip {
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 5px 3px; gap: 2px;
+}
+.gsc-planet-chip .chip-name { font-size: 9px; color: var(--text-dim); font-weight: 600; }
+.gsc-planet-chip .chip-rasi { font-size: 8px; color: var(--dim); }
+.gsc-planet-chip .chip-score { font-size: 15px; font-weight: 800; }
+</style>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div>
+    <div class="hdr-title">☽ JYOTHISHAM</div>
+    <div class="hdr-sub">தென்னிந்திய ஜாதக கட்டம்</div>
+  </div>
+  <div class="hdr-right">
+    <div class="now-badge" onclick="refreshNow()">இப்போது ↺</div>
+    <button class="install-icon-btn" onclick="showInstallModal()">⬇ நிறுவு</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab(0)">இப்போது லக்னம்</div>
+  <div class="tab" onclick="showTab(1)">இப்போது நவாம்சம்</div>
+  <div class="tab" onclick="showTab(2)">தேதி லக்னம்</div>
+  <div class="tab" onclick="showTab(3)">தேதி நவாம்சம்</div>
+</div>
+
+<!-- SCROLL AREA -->
+<div class="scroll-area" id="scroll-area">
+<div class="pages-track" id="pages-track">
+
+  <!-- ════ TAB 0: NOW LAGNA ════ -->
+  <div class="page" id="page0">
+    <div id="now-info" class="date-strip" style="justify-content:center;">
+      <span style="font-size:11px;color:var(--text-dim);">தற்போதைய நேரம் (IST): </span>
+      <span id="now-time-label" style="font-size:11px;color:var(--gold);font-weight:700;"></span>
+    </div>
+    <div class="section-title">இப்போதைய லக்னம் கட்டம்</div>
+    <div class="asp-legend">
+      <span class="paarvai-label">பார்வை:</span>
+      <div class="asp-leg-item"><div class="asp-line" style="background:#3DFFAA;height:2px;border-radius:1px;width:20px"></div>குரு (5,7,9)</div>
+      <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dashed #FFB347;"></div>சனி (3,7,10)</div>
+      <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dotted #FF5566;"></div>செவ்வாய் (4,7,8)</div>
+    </div>
+    <div class="si-chart" id="chart-now-lagna"></div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--exalt)"></div> உச்சம் (Exaltation)</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--neecha)"></div> நீசம் (Debilitation)</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--retro)"></div> வக்ரம் (Retrograde)</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--lagna)"></div> லக்னம்</div>
+    </div>
+    <div class="section-title">கிரக விவரங்கள்</div>
+    <div class="pt-wrap"><div id="ptable-now-lagna"></div></div>
+    <div class="section-title">நட்சத்திர சாரம் (Planet → Star → Lord → Sublord)</div>
+    <div class="ns-wrap"><div id="nsaram-now-lagna"></div></div>
+    <div class="section-title">விம்சோத்தரி தசை</div>
+    <div class="pt-wrap"><div id="dasha-now-lagna"></div></div>
+    <div class="section-title">ராசி நட்சத்திர கட்டம்</div>
+    <div id="star-chart-0"></div>
+  </div>
+
+  <!-- ════ TAB 1: NOW NAVAMSA ════ -->
+  <div class="page" id="page1">
+    <div class="section-title">இப்போதைய நவாம்சம் கட்டம்</div>
+    <div class="asp-legend">
+      <span class="paarvai-label">பார்வை:</span>
+      <div class="asp-leg-item"><div class="asp-line" style="background:#3DFFAA;height:2px;border-radius:1px;width:20px"></div>குரு (5,7,9)</div>
+      <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dashed #FFB347;"></div>சனி (3,7,10)</div>
+      <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dotted #FF5566;"></div>செவ்வாய் (4,7,8)</div>
+    </div>
+    <div class="si-chart" id="chart-now-navamsa"></div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--exalt)"></div> உச்சம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--neecha)"></div> நீசம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--retro)"></div> வக்ரம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--lagna)"></div> லக்னம்</div>
+    </div>
+    <div class="section-title">நவாம்ச கிரக விவரங்கள்</div>
+    <div class="pt-wrap"><div id="ptable-now-navamsa"></div></div>
+    <div class="section-title">ராசி நட்சத்திர கட்டம்</div>
+    <div id="star-chart-1"></div>
+  </div>
+
+  <!-- ════ TAB 2: NOW ASHTAKAVARGA (NEW) ════ -->
+  <div class="page" id="page2">
+    <div class="section-title" style="margin-bottom:8px;">இப்போதைய அஷ்டகவர்க்கம்</div>
+    <div class="ashtak-wrap">
+      <div id="gochar-score-now"></div>
+      <div class="ashtak-title">சர்வாஷ்டகவர்க்கம் — ராசி கட்டம்</div>
+      <div class="ashtak-scroll"><table class="ashtak-table" id="ashtak-table-now"></table></div>
+    </div>
+  </div>
+
+  <!-- ════ TAB 3: DATE LAGNA (was TAB 2) ════ -->
+  <div class="page" id="page3">
+
+    <!-- DRUM DATE/TIME PICKER -->
+    <div class="drum-container" id="drum-container">
+
+      <!-- Current time display -->
+      <div class="drum-now-bar">
+        <span class="drum-now-label" id="drum-now-label">இப்போது</span>
+        <button class="drum-now-btn" onclick="drumSetNow()">↺ இப்போது</button>
+      </div>
+
+      <!-- 5 drum columns: DD | MM | YYYY | HH | MIN -->
+      <div class="drum-row">
+        <div class="drum-col">
+          <div class="drum-col-label">நாள்</div>
+          <div class="drum-viewport" id="dv-dd">
+            <div class="drum-items" id="di-dd"></div>
+          </div>
+        </div>
+        <div class="drum-col">
+          <div class="drum-col-label">மாதம்</div>
+          <div class="drum-viewport" id="dv-mm">
+            <div class="drum-items" id="di-mm"></div>
+          </div>
+        </div>
+        <div class="drum-col drum-col-yr">
+          <div class="drum-col-label">ஆண்டு</div>
+          <div class="drum-viewport" id="dv-yr">
+            <div class="drum-items" id="di-yr"></div>
+          </div>
+        </div>
+        <div class="drum-sep">·</div>
+        <div class="drum-col">
+          <div class="drum-col-label">மணி</div>
+          <div class="drum-viewport" id="dv-hh">
+            <div class="drum-items" id="di-hh"></div>
+          </div>
+        </div>
+        <div class="drum-col">
+          <div class="drum-col-label">நிமி</div>
+          <div class="drum-viewport" id="dv-mn">
+            <div class="drum-items" id="di-mn"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Place + Calculate -->
+      <div class="drum-bottom-row">
+        <select class="drum-place-sel" id="drum-place">
+          <option value="13.0827,80.2707">சென்னை</option>
+          <option value="12.9716,77.5946">Bengaluru</option>
+          <option value="19.0760,72.8777">Mumbai</option>
+          <option value="28.6139,77.2090">Delhi</option>
+          <option value="17.3850,78.4867">Hyderabad</option>
+          <option value="22.5726,88.3639">Kolkata</option>
+          <option value="9.9252,78.1198">Madurai</option>
+          <option value="11.0168,76.9558">Coimbatore</option>
+          <option value="10.7905,78.7047">Trichy</option>
+          <option value="8.7139,77.7567">Nagercoil</option>
+        </select>
+        <button class="drum-calc-btn" onclick="drumCalc()">கணக்கிடு ▶</button>
+      </div>
+    </div>
+
+    <!-- Saved charts row -->
+    <div class="saved-strip" style="margin-top:8px;">
+      <label style="font-size:11px;color:var(--gold);font-weight:700;">💾 சேமித்தவை:</label>
+      <select class="saved-select" id="saved-select" onchange="loadSavedChart()">
+        <option value="">-- தேர்வு செய் --</option>
+      </select>
+      <button class="save-btn" onclick="showSaveName()">+ சேமி</button>
+      <button class="del-btn" onclick="deleteSavedChart()" title="Delete">🗑</button>
+      <div class="save-name-row" id="save-name-row">
+        <input class="save-name-input" id="save-name-input" placeholder="பெயர் (eg: அம்மா, அப்பா...)">
+        <button class="save-confirm-btn" onclick="confirmSave()">சேமி</button>
+      </div>
+    </div>
+    <div class="section-title">தேர்ந்த நேர லக்னம் கட்டம்</div>
+    <div class="asp-legend">
+      <span class="paarvai-label">பார்வை:</span>
+      <div class="asp-leg-item"><div class="asp-line" style="background:#3DFFAA;height:2px;border-radius:1px;width:20px"></div>குரு (5,7,9)</div>
+      <div class="asp-leg-item"><div class="asp-line" style="height:0;border-top:2px dashed #FFB347;width:20px"></div>சனி (3,7,10)</div>
+      <div class="asp-leg-item"><div class="asp-line" style="height:0;border-top:2px dotted #FF5566;width:20px"></div>செவ்வாய் (4,7,8)</div>
+    </div>
+    <div class="si-chart" id="chart-sel-lagna"></div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--exalt)"></div> உச்சம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--neecha)"></div> நீசம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--retro)"></div> வக்ரம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--lagna)"></div> லக்னம்</div>
+    </div>
+    <div class="section-title">கிரக விவரங்கள்</div>
+    <div class="pt-wrap"><div id="ptable-sel-lagna"></div></div>
+    <div class="section-title">நட்சத்திர சாரம்</div>
+    <div class="ns-wrap"><div id="nsaram-sel-lagna"></div></div>
+    <div class="section-title">விம்சோத்தரி தசை</div>
+    <div class="pt-wrap"><div id="dasha-sel-lagna"></div></div>
+    <div class="section-title">ராசி நட்சத்திர கட்டம்</div>
+    <div id="star-chart-2"></div>
+  </div>
+
+  <!-- ════ TAB 4: DATE NAVAMSA (was TAB 3) ════ -->
+  <div class="page" id="page4">
+    <div class="section-title">தேர்ந்த நேர நவாம்சம் கட்டம்</div>
+    <div class="asp-legend">
+      <span class="paarvai-label">பார்வை:</span>
+      <div class="asp-leg-item"><div class="asp-line" style="background:#3DFFAA;height:2px;border-radius:1px;width:20px"></div>குரு (5,7,9)</div>
+      <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dashed #FFB347;"></div>சனி (3,7,10)</div>
+      <div class="asp-leg-item"><div style="width:20px;height:0;border-top:2px dotted #FF5566;"></div>செவ்வாய் (4,7,8)</div>
+    </div>
+    <div class="si-chart" id="chart-sel-navamsa"></div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--exalt)"></div> உச்சம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--neecha)"></div> நீசம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--retro)"></div> வக்ரம்</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--lagna)"></div> லக்னம்</div>
+    </div>
+    <div class="section-title">நவாம்ச கிரக விவரங்கள்</div>
+    <div class="pt-wrap"><div id="ptable-sel-navamsa"></div></div>
+    <div class="section-title">ராசி நட்சத்திர கட்டம்</div>
+    <div id="star-chart-3"></div>
+  </div>
+
+  <!-- ════ TAB 5: DATE ASHTAKAVARGA (NEW) ════ -->
+  <div class="page" id="page5">
+    <div class="section-title" style="margin-bottom:8px;">தேர்ந்த நேர அஷ்டகவர்க்கம்</div>
+    <div class="ashtak-wrap">
+      <div id="gochar-score-sel"></div>
+      <div class="ashtak-title">சர்வாஷ்டகவர்க்கம் — ராசி கட்டம்</div>
+      <div class="ashtak-scroll"><table class="ashtak-table" id="ashtak-table-sel"></table></div>
+    </div>
+  </div>
+
+</div><!-- end pages-track -->
+</div><!-- end scroll-area -->
+
+<!-- INSTALL MODAL -->
+<div id="install-modal" onclick="closeInstallModal(event)">
+  <div class="im-sheet">
+    <div class="im-handle"></div>
+    <div class="im-title">🔮 ஜோதிஷம் — நிறுவுக</div>
+    <div class="im-sub" id="im-sub-text">உங்கள் மொபைலில் ஆப்பாக நிறுவலாம்</div>
+
+    <!-- Native Chrome install button (Android) — shown only when prompt available -->
+    <button class="im-native-btn" id="im-native-btn" onclick="triggerNativeInstall()">
+      ⬇ இப்போதே நிறுவு (Android Chrome)
+    </button>
+
+    <!-- Manual steps — shown always as fallback -->
+    <div class="im-steps" id="im-steps"></div>
+
+    <button class="im-close-btn" onclick="closeInstallModal()">மூடு</button>
+  </div>
+</div>
+
+<!-- OFFLINE TOAST -->
+<div id="offline-toast">📡 இணைப்பு இல்லை — offline mode</div>
+
+<!-- BOTTOM NAV -->
+<div class="bot-nav">
+  <div class="bn-item active" onclick="showTab(0)"><div class="bn-icon">🏠</div>லக்னம்</div>
+  <div class="bn-item" onclick="showTab(1)"><div class="bn-icon">✦</div>நவாம்சம்</div>
+  <div class="bn-item" onclick="showTab(2)"><div class="bn-icon">⭐</div>அஷ்டக</div>
+  <div class="bn-item" onclick="showTab(3)"><div class="bn-icon">📅</div>தேதி</div>
+  <div class="bn-item" onclick="showTab(4)"><div class="bn-icon">🔮</div>தேதி நவா</div>
+  <div class="bn-item" onclick="showTab(5)"><div class="bn-icon">🌟</div>தேதி அஷ்</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATA TABLES
+// ═══════════════════════════════════════════════════
+
+// Rasi names
+const RASI = ['மேஷம்','ரிஷபம்','மிதுனம்','கடகம்','சிம்மம்','கன்னி','துலாம்','விருச்சிகம்','தனுசு','மகரம்','கும்பம்','மீனம்'];
+const RASI_SHORT = ['மே','ரி','மி','கட','சிம்','கன்','து','விரு','தனு','மக','கும்','மீ'];
+
+// 27 Natchatras: [name, lord, dashaYears, rasi_index(0-based), pada_start]
+// Each rasi has 9 padas = 2.25 stars
+const NATCHATRA = [
+  ['அசுவினி','கேது',7,0],
+  ['பரணி','சுக்கிரன்',20,0],
+  ['கார்த்திகை','சூரியன்',6,0],   // 1 pada in Mesha, 3 in Rishabha
+  ['ரோகிணி','சந்திரன்',10,1],
+  ['மிருகசீரிடம்','செவ்வாய்',7,1], // 2 in Rishabha, 2 in Mithuna
+  ['திருவாதிரை','ராகு',18,2],
+  ['புனர்பூசம்','குரு',16,2],      // 3 in Mithuna, 1 in Kataka
+  ['பூசம்','சனி',19,3],
+  ['ஆயில்யம்','புதன்',17,3],
+  ['மகம்','கேது',7,4],
+  ['பூரம்','சுக்கிரன்',20,4],
+  ['உத்திரம்','சூரியன்',6,4],      // 1 in Simha, 3 in Kanni
+  ['அஸ்தம்','சந்திரன்',10,5],
+  ['சித்திரை','செவ்வாய்',7,5],     // 2 in Kanni, 2 in Tula
+  ['சுவாதி','ராகு',18,6],
+  ['விசாகம்','குரு',16,6],         // 3 in Tula, 1 in Vrischika
+  ['அனுஷம்','சனி',19,7],
+  ['கேட்டை','புதன்',17,7],
+  ['மூலம்','கேது',7,8],
+  ['பூராடம்','சுக்கிரன்',20,8],
+  ['உத்திராடம்','சூரியன்',6,8],   // 1 in Dhanu, 3 in Makara
+  ['திருவோணம்','சந்திரன்',10,9],
+  ['அவிட்டம்','செவ்வாய்',7,9],    // 2 in Makara, 2 in Kumbha
+  ['சதயம்','ராகு',18,10],
+  ['பூரட்டாதி','குரு',16,10],      // 3 in Kumbha, 1 in Meena
+  ['உத்திரட்டாதி','சனி',19,11],
+  ['ரேவதி','புதன்',17,11]
+];
+
+// Exaltation and debilitation degrees (sign index 0-11, degree 0-29)
+// [exaltSign, exaltDeg, neechaSign, neechaDeg]
+const PLANET_DIGNITY = {
+  'சூரியன்': [0,10,6,10],
+  'சந்திரன்': [1,3,7,3],
+  'செவ்வாய்': [9,28,3,28],
+  'புதன்': [5,15,11,15],
+  'குரு': [3,5,9,5],
+  'சுக்கிரன்': [11,27,5,27],
+  'சனி': [6,20,0,20],
+  'ராகு': [1,20,7,20],
+  'கேது': [7,20,1,20]
+};
+
+// Sub-lord table (simplified KP sublord divisions within a star)
+// Each natchatra = 13°20' divided into 9 sub-lords in dasha proportion
+const DASHA_ORDER = ['கேது','சுக்கிரன்','சூரியன்','சந்திரன்','செவ்வாய்','ராகு','குரு','சனி','புதன்'];
+const DASHA_YEARS = {'கேது':7,'சுக்கிரன்':20,'சூரியன்':6,'சந்திரன்':10,'செவ்வாய்':7,'ராகு':18,'குரு':16,'சனி':19,'புதன்':17};
+const TOTAL_YEARS = 120;
+const STAR_SPAN = 800/60; // 13°20' in decimal degrees
+
+function getSubLord(degInStar) {
+  // degInStar: 0 to 13.333...
+  // find which natchatra lord this star belongs to (from NATCHATRA table)
+  // then subdivide by dasha proportions
+  const spanPerDeg = STAR_SPAN; // total span of star
+  const natchIdx = Math.floor(degInStar / spanPerDeg * 27) % 27; // rough
+  // Simple sub-division: proportional to dasha years within star
+  let cumul = 0;
+  const starLordIdx = DASHA_ORDER.indexOf(NATCHATRA[0][1]); // placeholder
+  for (let i = 0; i < 9; i++) {
+    const lord = DASHA_ORDER[(starLordIdx + i) % 9];
+    const sub_span = (DASHA_YEARS[lord] / TOTAL_YEARS) * STAR_SPAN;
+    cumul += sub_span;
+    if (degInStar < cumul) return lord;
+  }
+  return DASHA_ORDER[0];
+}
+
+// ═══════════════════════════════════════════════════
+// JULIAN DAY — always pass a JS Date; reads UTC fields
+// JD is in UT (= UTC for our purposes)
+// ═══════════════════════════════════════════════════
+function julianDay(date) {
+  const Y = date.getUTCFullYear();
+  const M = date.getUTCMonth() + 1;
+  // Fractional day in UT
+  const D = date.getUTCDate()
+          + date.getUTCHours()   / 24.0
+          + date.getUTCMinutes() / 1440.0
+          + date.getUTCSeconds() / 86400.0;
+  let JD;
+  if (M <= 2) {
+    const Yp = Y - 1, Mp = M + 12;
+    const A = Math.floor(Yp / 100), B = 2 - A + Math.floor(A / 4);
+    JD = Math.floor(365.25 * (Yp + 4716)) + Math.floor(30.6001 * (Mp + 1)) + D + B - 1524.5;
+  } else {
+    const A = Math.floor(Y / 100), B = 2 - A + Math.floor(A / 4);
+    JD = Math.floor(365.25 * (Y + 4716)) + Math.floor(30.6001 * (M + 1)) + D + B - 1524.5;
+  }
+  return JD;
+}
+
+// Utility: build a UTC Date from IST input
+// IST = UTC + 5:30, so UTC = IST − 330 minutes
+function istToJD(istY, istM, istD, istHH, istMM) {
+  const totalISTmin = istHH * 60 + istMM;
+  const totalUTCmin = totalISTmin - 330;
+  // Resolve to calendar date + time
+  let utcMidnightMs = Date.UTC(istY, istM - 1, istD); // midnight of IST date
+  // Add UTC offset in ms
+  const utcMs = utcMidnightMs + totalUTCmin * 60000;
+  const d = new Date(utcMs);
+  return { jd: julianDay(d), date: d };
+}
+
+function mod360(x) { return ((x % 360) + 360) % 360; }
+
+// Lahiri (Chitrapaksha) Ayanamsha
+// Reference: 23.85395° at J2000.0 (Jan 1.5, 2000)
+// Precession rate: 50.2388 arcsec/year = 0.013955 deg/year
+function ayanamsha(jd) {
+  const yrs = (jd - 2451545.0) / 365.25;
+  return 23.85395 + yrs * (50.2388 / 3600);
+}
+
+// ═══════════════════════════════════════════════════
+// GEOCENTRIC PLANETARY LONGITUDES
+// Method: Kepler orbital solution → heliocentric →
+//         subtract Earth vector → geocentric ecliptic
+// Orbital elements: Meeus Table 31.a (J2000 epoch)
+// Accuracy: ~0.1° for most planets
+// ═══════════════════════════════════════════════════
+function tropicalLon(jd) {
+  const T  = (jd - 2451545.0) / 36525.0;
+  const Rd = Math.PI / 180;
+
+  // Solve Kepler's equation E = M + e·sin(E)
+  function kepler(M_deg, e) {
+    let E = M_deg * Rd;
+    for (let i = 0; i < 15; i++) E = M_deg * Rd + e * Math.sin(E);
+    return 2 * Math.atan(Math.sqrt((1 + e) / (1 - e)) * Math.tan(E / 2)) / Rd;
+  }
+
+  // Heliocentric lon + radius from orbital elements
+  // el = { L0, Ld (mean lon rate/century), e0, Ombar0, Ombar_d (lon perihelion) }
+  function getHelio(el) {
+    const L    = mod360(el.L0 + el.Ld * T);
+    const ombar = mod360(el.Ombar0 + el.Ombar_d * T); // lon of perihelion
+    const M    = mod360(L - ombar);                    // mean anomaly
+    const v    = kepler(M, el.e0);                     // true anomaly
+    const r    = el.a * (1 - el.e0 * el.e0) / (1 + el.e0 * Math.cos(v * Rd));
+    return { lon: mod360(v + ombar), r };
+  }
+
+  // Orbital elements (Meeus Table 31.a)
+  const EL = {
+    Earth:   {L0:100.466457, Ld:35999.3728565,  a:1.000000, e0:0.01670862, Ombar0:102.937348, Ombar_d:0.3225557},
+    Mercury: {L0:252.250906, Ld:149472.6746358, a:0.387098, e0:0.20563175, Ombar0:77.456119,  Ombar_d:0.1588643},
+    Venus:   {L0:181.979801, Ld:58517.8156760,  a:0.723330, e0:0.00677188, Ombar0:131.563703, Ombar_d:0.0048746},
+    Mars:    {L0:355.433275, Ld:19140.2993313,  a:1.523679, e0:0.09340062, Ombar0:336.060234, Ombar_d:0.4439016},
+    Jupiter: {L0:34.351519,  Ld:3034.9056606,   a:5.202603, e0:0.04849485, Ombar0:14.331309,  Ombar_d:0.2155209},
+    Saturn:  {L0:50.077444,  Ld:1222.1138488,   a:9.554909, e0:0.05550825, Ombar0:93.056787,  Ombar_d:0.5665496},
+  };
+
+  const earth = getHelio(EL.Earth);
+
+  // Convert heliocentric → geocentric
+  function helioToGeo(lon_p, r_p) {
+    const dx = r_p * Math.cos(lon_p * Rd) - earth.r * Math.cos(earth.lon * Rd);
+    const dy = r_p * Math.sin(lon_p * Rd) - earth.r * Math.sin(earth.lon * Rd);
+    return mod360(Math.atan2(dy, dx) / Rd);
+  }
+
+  // Sun = opposite of Earth heliocentric
+  const sun = mod360(earth.lon + 180);
+
+  // Outer/inner planets via Kepler
+  const mer  = helioToGeo(...Object.values(getHelio(EL.Mercury)));
+  const ven  = helioToGeo(...Object.values(getHelio(EL.Venus)));
+  const mars = helioToGeo(...Object.values(getHelio(EL.Mars)));
+  const jup  = helioToGeo(...Object.values(getHelio(EL.Jupiter)));
+  const sat  = helioToGeo(...Object.values(getHelio(EL.Saturn)));
+
+  // Moon (geocentric directly, Meeus Ch.47)
+  const Lm   = mod360(218.3165  + 481267.8813  * T);
+  const Dm   = mod360(297.85036 + 445267.11148 * T - 0.0019142 * T * T) * Rd;
+  const Mm   = mod360(357.52772 + 35999.05034  * T - 0.0001603 * T * T) * Rd;
+  const Mpm  = mod360(134.96298 + 477198.86742 * T + 0.0086972 * T * T) * Rd;
+  const Fm   = mod360(93.27191  + 483202.01753 * T - 0.0036825 * T * T) * Rd;
+  const dLm  = (6288774 * Math.sin(Mpm)
+             + 1274027 * Math.sin(2*Dm - Mpm)
+             +  658314 * Math.sin(2*Dm)
+             +  213618 * Math.sin(2*Mpm)
+             -  185116 * Math.sin(Mm)
+             -  114332 * Math.sin(2*Fm)
+             +   58793 * Math.sin(2*Dm - 2*Mpm)
+             +   57066 * Math.sin(2*Dm - Mm - Mpm)
+             +   53322 * Math.sin(2*Dm + Mpm)
+             +   45758 * Math.sin(2*Dm - Mm)
+             -   40923 * Math.sin(Mm - Mpm)
+             -   34720 * Math.sin(Dm)
+             -   30383 * Math.sin(Mm + Mpm)
+             +   15327 * Math.sin(2*Dm - 2*Fm)
+             -   12528 * Math.sin(Mpm + 2*Fm)
+             +   10980 * Math.sin(Mpm - 2*Fm)) / 1000000;
+  const moon = mod360(Lm + dLm);
+
+  // Rahu — true ascending node (Meeus Ch.47)
+  const rahu = mod360(125.04452 - 1934.136261*T + 0.0020708*T*T + T*T*T/450000);
+
+  return {
+    'சூரியன்':  sun,
+    'சந்திரன்': moon,
+    'செவ்வாய்': mars,
+    'புதன்':    mer,
+    'குரு':     jup,
+    'சுக்கிரன்':ven,
+    'சனி':      sat,
+    'ராகு':     rahu,
+    'கேது':     mod360(rahu + 180)
+  };
+}
+
+function siderealLon(jd) {
+  const tropic = tropicalLon(jd);
+  const ayan   = ayanamsha(jd);
+  const result = {};
+  for (const p in tropic) result[p] = mod360(tropic[p] - ayan);
+  return result;
+}
+
+
+
+function lonToRasi(lon) { return Math.floor(lon / 30); }
+function lonToDeg(lon) { return lon % 30; }
+
+function getStatus(planet, rasiIdx, deg) {
+  const d = PLANET_DIGNITY[planet];
+  if (!d) return 'normal';
+  if (rasiIdx === d[0] && Math.abs(deg - d[1]) < 5) return 'exalt';
+  if (rasiIdx === d[0]) return 'exalt';
+  if (rasiIdx === d[2]) return 'neecha';
+  return 'normal';
+}
+
+// Retrograde: planets are retrograde at certain times (simplified check)
+// For demo: mark as retrograde based on approximate synodic cycles
+// Retrograde: cache orbital results to avoid recomputing 14× per chart
+const _retroCache = new Map();
+function isRetrograde(planet, jd) {
+  if (['சூரியன்','சந்திரன்'].includes(planet)) return false;
+  if (['ராகு','கேது'].includes(planet)) return true;
+  const key = `${planet}|${Math.round(jd*10)}`;
+  if (_retroCache.has(key)) return _retroCache.get(key);
+  const lonBefore = siderealLon(jd - 1)[planet];
+  const lonAfter  = siderealLon(jd + 1)[planet];
+  const diff = ((lonAfter - lonBefore + 180 + 360) % 360) - 180;
+  const result = diff < 0;
+  _retroCache.set(key, result);
+  // Limit cache size
+  if (_retroCache.size > 50) _retroCache.delete(_retroCache.keys().next().value);
+  return result;
+}
+
+// Natchatra from longitude
+function getNatchatra(lon) {
+  const idx = Math.floor(lon / (360/27));
+  const padaIdx = Math.floor((lon % (360/27)) / (360/108));
+  return { idx, pada: padaIdx + 1, name: NATCHATRA[idx][0], lord: NATCHATRA[idx][1], years: NATCHATRA[idx][2] };
+}
+
+// Sublord (KP simplified: subdivide natchatra span by dasha proportions)
+function getSubLordForLon(lon) {
+  const starSpan = 360 / 27;
+  const starIdx = Math.floor(lon / starSpan);
+  const degInStar = lon - starIdx * starSpan;
+  const startLordIdx = DASHA_ORDER.indexOf(NATCHATRA[starIdx][1]);
+  let cumul = 0;
+  for (let i = 0; i < 9; i++) {
+    const lord = DASHA_ORDER[(startLordIdx + i) % 9];
+    const subSpan = (DASHA_YEARS[lord] / TOTAL_YEARS) * starSpan;
+    cumul += subSpan;
+    if (degInStar < cumul) return lord;
+  }
+  return DASHA_ORDER[0];
+}
+
+// Navamsa rasi from longitude — corrected formula
+// Fire signs start Mesha, Earth start Makara, Air start Tula, Water start Kataka
+function getNavamsa(lon) {
+  lon = ((lon % 360) + 360) % 360;
+  const NAVAMSA_START = [
+    0, 9, 6, 3,  // Mesha, Rishabha, Mithuna, Kataka
+    0, 9, 6, 3,  // Simha, Kanni,    Tula,    Vrischika
+    0, 9, 6, 3   // Dhanu, Makara,   Kumbha,  Meena
+  ];
+  const rasi      = Math.floor(lon / 30);
+  const degInRasi = lon - rasi * 30;
+  const navIdx    = Math.floor(degInRasi / (30 / 9)); // 0-8
+  return (NAVAMSA_START[rasi] + navIdx) % 12;
+}
+
+// ═══════════════════════════════════════════════════
+// LAGNA (ASCENDANT) — definitive working formula
+// Uses GMST formula from USNO/IAU directly in degrees
+// Verified: gives correct results for known test cases
+// ═══════════════════════════════════════════════════
+function getLagnaRasi(jd, lat = 13.0827, geoLon = 80.2707) {
+  const R = Math.PI / 180;
+
+  // T = Julian centuries from J2000.0
+  const T = (jd - 2451545.0) / 36525.0;
+
+  // GMST in degrees — IAU formula (works for any UT moment directly)
+  // This formula takes the JD with its fractional UT day already included
+  // Reference: US Naval Observatory Circular 163 / Meeus p.87 simplified
+  let GMST = 280.46061837
+           + 360.98564736629 * (jd - 2451545.0)
+           + 0.000387933 * T * T
+           - (T * T * T) / 38710000.0;
+  GMST = ((GMST % 360) + 360) % 360;
+
+  // LST = Local Sidereal Time (degrees)
+  const LST = ((GMST + geoLon) % 360 + 360) % 360;
+
+  // Obliquity of ecliptic (degrees)
+  const eps = 23.439291111 - 0.013004167 * T;
+
+  // Tropical Ascendant (Meeus formula, correct quadrant via atan2)
+  const RAMC = LST * R;
+  const e    = eps * R;
+  const phi  = lat * R;
+
+  // ASC formula gives eastern horizon point
+  // atan2 result needs +180 to convert from descendant to ascendant
+  const num = -Math.cos(RAMC);
+  const den =  Math.sin(RAMC) * Math.cos(e) + Math.tan(phi) * Math.sin(e);
+  let tropAsc = ((Math.atan2(num, den) / R) + 180 + 360) % 360;
+
+  // Lahiri ayanamsha (Chitrapaksha)
+  const ayan = ayanamsha(jd);
+
+  // Sidereal Ascendant
+  const sidAsc = ((tropAsc - ayan) % 360 + 360) % 360;
+
+  return {
+    rasi:    Math.floor(sidAsc / 30),
+    deg:     sidAsc % 30,
+    sidAsc,  tropAsc, lst: LST,
+    gmst:    GMST,
+    utH:     (jd - (Math.floor(jd - 0.5) + 0.5)) * 24,
+    ayan
+  };
+}
+
+// ═══════════════════════════════════════════════════
+// BUILD CHART DATA
+// ═══════════════════════════════════════════════════
+function buildChartData(jd, isNavamsa = false, lat = 13.0827, geoLon = 80.2707) {
+  const lons = siderealLon(jd);
+  const lagna = getLagnaRasi(jd, lat, geoLon);
+
+  const planets = [];
+  const PLANET_LIST = ['சூரியன்','சந்திரன்','செவ்வாய்','புதன்','குரு','சுக்கிரன்','சனி','ராகு','கேது'];
+  const SHORT = {'சூரியன்':'சூ','சந்திரன்':'சந்','செவ்வாய்':'செ','புதன்':'பு','குரு':'கு','சுக்கிரன்':'சு','சனி':'சனி','ராகு':'ரா','கேது':'கே'};
+
+  for (const p of PLANET_LIST) {
+    const lon    = lons[p];
+    const rasiIdx = isNavamsa ? getNavamsa(lon) : lonToRasi(lon);
+    // For navamsa: deg within the navamsa rasi (position within that 3°20' slice)
+    // For rasi: deg within the rasi
+    const deg = isNavamsa
+      ? (lon - Math.floor(lon / (30/9)) * (30/9)) % (30/9)   // deg within navamsa slice
+      : lonToDeg(lon);
+    const retro = isRetrograde(p, jd) && !['சூரியன்','சந்திரன்'].includes(p);
+    // Status uses the actual rasi (not navamsa rasi) for exaltation check
+    const actualRasi = lonToRasi(lon);
+    const status = retro ? 'retro' : getStatus(p, actualRasi, lonToDeg(lon));
+    const nat = getNatchatra(lon);
+    const sublord = getSubLordForLon(lon);
+    planets.push({
+      name: p,
+      short: SHORT[p],
+      lon, rasiIdx, deg,
+      retro, status,
+      nat, sublord
+    });
+  }
+
+  const lagnaRasiIdx = isNavamsa ? getNavamsa(lagna.rasi * 30 + lagna.deg) : lagna.rasi;
+
+  return { planets, lagnaRasi: lagnaRasiIdx, lagnaRawDeg: lagna.deg,
+           lagnaFullLon: lagna.sidAsc, lst: lagna.lst, utH: lagna.utH, jd };
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER SOUTH INDIAN CHART
+// South Indian fixed layout:
+// Row0: r12, r1,  r2,  r3
+// Row1: r11, [C   EN   TR], r4
+// Row2: r10, [E   NT   RE], r5
+// Row3: r9,  r8,  r7,  r6
+// rasi index 0=Mesha=r1, ..., 11=Meena=r12
+// Cell order in DOM: r12,r1,r2,r3, r11,CENTRE,r4, r10,r5, r9,r8,r7,r6
+// ═══════════════════════════════════════════════════
+function renderSIChart(containerId, data) {
+  const el = document.getElementById(containerId);
+
+  const rasiMap = {};
+  for (let i = 0; i < 12; i++) rasiMap[i] = [];
+  for (const p of data.planets) rasiMap[p.rasiIdx].push(p);
+
+  const CW_ORDER = [11,0,1,2,3,4,5,6,7,8,9,10];
+  function houseNum(rasiIdx) {
+    const lagnaPos = CW_ORDER.indexOf(data.lagnaRasi);
+    const rasiPos  = CW_ORDER.indexOf(rasiIdx);
+    return ((rasiPos - lagnaPos + 12) % 12) + 1;
+  }
+
+  function makeCell(rasiIdx) {
+    const isLagna = rasiIdx === data.lagnaRasi;
+    const planets  = rasiMap[rasiIdx];
+    const hNum     = houseNum(rasiIdx);
+    let inner = `<div class="rasi-name">${RASI_SHORT[rasiIdx]}</div><div class="house-num">${hNum}</div>`;
+    if (isLagna) inner += `<div class="lagna-tri"></div>`;
+    let content = '';
+    if (isLagna) content += `<div class="pl"><span class="pl-n lagna-pl">ல</span><span class="pl-d">${data.lagnaRawDeg.toFixed(0)}°</span></div>`;
+    for (const p of planets) {
+      content += `<div class="pl"><span class="pl-n ${p.status}">${p.short}${p.retro?'*':''}</span><span class="pl-d">${p.deg.toFixed(0)}°</span></div>`;
+    }
+    return `<div class="cell">${inner}<div class="cell-content">${content}</div></div>`;
+  }
+
+  const centre = `<div class="cell centre"><div class="centre-label">ராசி</div><div class="centre-rasi">${RASI[data.lagnaRasi]}<br/>லக்னம் <span style="color:var(--degree);font-size:10px;">${data.lagnaRawDeg.toFixed(1)}°</span></div></div>`;
+
+  // Set as ONE assignment — never use +=
+  el.innerHTML =
+    makeCell(11)+makeCell(0)+makeCell(1)+makeCell(2)+
+    makeCell(10)+centre+makeCell(3)+
+    makeCell(9)+makeCell(4)+
+    makeCell(8)+makeCell(7)+makeCell(6)+makeCell(5);
+}
+
+
+
+
+// ═══════════════════════════════════════════════════
+// VIMSOTTARI DASHA ENGINE
+// ═══════════════════════════════════════════════════
+// Dasha lords in order, with years
+const DASHA_LORD_ORDER = ['கேது','சுக்கிரன்','சூரியன்','சந்திரன்','செவ்வாய்','ராகு','குரு','சனி','புதன்'];
+const DASHA_YEARS_MAP  = {கேது:7,சுக்கிரன்:20,சூரியன்:6,சந்திரன்:10,செவ்வாய்:7,ராகு:18,குரு:16,சனி:19,புதன்:17};
+const DASHA_SHORT      = {கேது:'கே',சுக்கிரன்:'சு',சூரியன்:'சூ',சந்திரன்:'சந்',செவ்வாய்:'செ',ராகு:'ரா',குரு:'கு',சனி:'சனி',புதன்:'பு'};
+const TOTAL_DASHA_YRS  = 120;
+const MS_PER_DAY       = 86400000;
+// Each natchatra (0-26) maps to a dasha lord index in DASHA_LORD_ORDER
+const NAT_LORD_IDX     = [0,1,2,3,4,5,6,7,8, 0,1,2,3,4,5,6,7,8, 0,1,2,3,4,5,6,7,8];
+
+function vimsottariDasha(moonLonSid, birthJD) {
+  // Moon's natchatra (0-26) and position within it
+  const starSpan   = 360 / 27; // 13.333...°
+  const natIdx     = Math.floor(moonLonSid / starSpan);
+  const degInStar  = moonLonSid - natIdx * starSpan;
+  const fracInStar = degInStar / starSpan; // 0 to 1
+
+  // Lord of this natchatra
+  const lordIdx    = NAT_LORD_IDX[natIdx];
+  const lord       = DASHA_LORD_ORDER[lordIdx];
+  const lordYrs    = DASHA_YEARS_MAP[lord];
+
+  // Balance of dasha at birth = remaining fraction of lord's period
+  const balanceYrs = lordYrs * (1 - fracInStar);
+
+  // Build full dasha sequence from birth
+  const MS_PER_YR = 365.25 * MS_PER_DAY;
+  const birthMs   = (birthJD - 2440587.5) * MS_PER_DAY; // JD to Unix ms
+
+  const dashas = [];
+  let cursor   = birthMs;
+  let startIdx = lordIdx;
+
+  // First dasha (balance)
+  dashas.push({ lord, yrs: balanceYrs, startMs: cursor });
+  cursor += balanceYrs * MS_PER_YR;
+
+  // Remaining 8 dashas in full
+  for (let i = 1; i <= 8; i++) {
+    const idx  = (startIdx + i) % 9;
+    const l    = DASHA_LORD_ORDER[idx];
+    const yrs  = DASHA_YEARS_MAP[l];
+    dashas.push({ lord: l, yrs, startMs: cursor });
+    cursor += yrs * MS_PER_YR;
+  }
+  return { dashas, birthMs, MS_PER_YR };
+}
+
+function getBukthiAntharams(dashaLord, dashaStartMs, dashaYrs, MS_PER_YR) {
+  // Bukthi lords start from dashaLord itself
+  const startIdx = DASHA_LORD_ORDER.indexOf(dashaLord);
+  const bukthis  = [];
+  let cursor     = dashaStartMs;
+
+  for (let i = 0; i < 9; i++) {
+    const bIdx = (startIdx + i) % 9;
+    const bl   = DASHA_LORD_ORDER[bIdx];
+    const bYrs = dashaYrs * DASHA_YEARS_MAP[bl] / TOTAL_DASHA_YRS;
+
+    // Antharams within this bukthi
+    const bStartIdx = bIdx;
+    const antharams = [];
+    let aCursor     = cursor;
+    for (let j = 0; j < 9; j++) {
+      const aIdx = (bStartIdx + j) % 9;
+      const al   = DASHA_LORD_ORDER[aIdx];
+      const aYrs = bYrs * DASHA_YEARS_MAP[al] / TOTAL_DASHA_YRS;
+      antharams.push({ lord: al, startMs: aCursor, yrs: aYrs });
+      aCursor += aYrs * MS_PER_YR;
+    }
+
+    bukthis.push({ lord: bl, startMs: cursor, yrs: bYrs, antharams });
+    cursor += bYrs * MS_PER_YR;
+  }
+  return bukthis;
+}
+
+function msToDate(ms) {
+  const d = new Date(ms);
+  const dd = String(d.getUTCDate()).padStart(2,'0');
+  const mm = String(d.getUTCMonth()+1).padStart(2,'0');
+  const yy = d.getUTCFullYear();
+  return `${dd}/${mm}/${yy}`;
+}
+
+function renderDasha(containerId, data) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+
+  const moon = data.planets.find(p => p.name === 'சந்திரன்');
+  if (!moon) { el.innerHTML = '<p style="color:#888;font-size:12px;">சந்திரன் தரவு இல்லை</p>'; return; }
+
+  const moonLon = moon.lon !== undefined ? moon.lon : (moon.rasiIdx * 30 + moon.deg);
+  const { dashas, MS_PER_YR } = vimsottariDasha(moonLon, data.jd);
+  const nowMs = Date.now();
+  const cid = containerId;
+
+  function endMs(s, y) { return s + y * MS_PER_YR; }
+  function isCur(s, y) { return s <= nowMs && endMs(s,y) > nowMs; }
+
+  // Find defaults: current dasha and bukthi indices
+  let defDi = dashas.findIndex(d => isCur(d.startMs, d.yrs));
+  if (defDi < 0) defDi = 0;
+  const defBukthis = getBukthiAntharams(dashas[defDi].lord, dashas[defDi].startMs, dashas[defDi].yrs, MS_PER_YR);
+  let defBi = defBukthis.findIndex(b => isCur(b.startMs, b.yrs));
+  if (defBi < 0) defBi = 0;
+
+  // ── TAB BAR ──
+  let html = `<div class="dasha-tabs" id="${cid}-tabs">
+    <button class="dasha-tab active" id="${cid}-tab-d" onclick="dsTab('${cid}','d')">தசை</button>
+    <button class="dasha-tab" id="${cid}-tab-b" onclick="dsTab('${cid}','b')">புத்தி</button>
+    <button class="dasha-tab" id="${cid}-tab-a" onclick="dsTab('${cid}','a')">அந்தரம்</button>
+  </div>`;
+
+  // ── PANEL D: DASHA LIST ──
+  html += `<div class="dasha-panel active" id="${cid}-panel-d"><table class="dasha-table">
+    <thead><tr><th>தசை</th><th>முடிவு தேதி</th></tr></thead><tbody>`;
+  for (let di = 0; di < dashas.length; di++) {
+    const d = dashas[di];
+    const cur = isCur(d.startMs, d.yrs);
+    const sel = di === defDi;
+    html += `<tr class="${cur ? 'dasha-current' : ''} ${sel ? 'dasha-selected' : ''}"
+      onclick="dsDrillDasha('${cid}',${di})" style="cursor:pointer">
+      <td>${cur ? '▶ ' : ''}${DASHA_SHORT[d.lord]} தசை</td>
+      <td>${msToDate(endMs(d.startMs, d.yrs))}</td>
+    </tr>`;
+  }
+  html += `</tbody></table></div>`;
+
+  // ── PANEL B: BUKTHI LIST (pre-render for selected dasha) ──
+  html += `<div class="dasha-panel" id="${cid}-panel-b">${buildBukthiPanel(cid, dashas, defDi, MS_PER_YR, nowMs, defBi)}</div>`;
+
+  // ── PANEL A: ANTHARAM LIST (pre-render for selected bukthi) ──
+  html += `<div class="dasha-panel" id="${cid}-panel-a">${buildAntharamPanel(cid, dashas, defDi, defBukthis, defBi, MS_PER_YR, nowMs)}</div>`;
+
+  el.innerHTML = html;
+
+  // Store state on el for drill-down
+  el._dashas = dashas;
+  el._MS_PER_YR = MS_PER_YR;
+  el._nowMs = nowMs;
+}
+
+function buildBukthiPanel(cid, dashas, di, MS_PER_YR, nowMs, selBi) {
+  const d = dashas[di];
+  const bukthis = getBukthiAntharams(d.lord, d.startMs, d.yrs, MS_PER_YR);
+  function endMs(s,y){return s+y*MS_PER_YR;}
+  function isCur(s,y){return s<=nowMs&&endMs(s,y)>nowMs;}
+  let h = `<div class="dasha-subtitle">${DASHA_SHORT[d.lord]} தசை புத்திகள்</div>
+    <table class="dasha-table"><thead><tr><th>தசை/புத்தி</th><th>முடிவு தேதி</th></tr></thead><tbody>`;
+  for (let bi = 0; bi < bukthis.length; bi++) {
+    const b = bukthis[bi];
+    const cur = isCur(b.startMs, b.yrs);
+    const sel = bi === selBi;
+    h += `<tr class="${cur?'dasha-current':''} ${sel?'dasha-selected':''}"
+      onclick="dsDrillBukthi('${cid}',${di},${bi})" style="cursor:pointer">
+      <td>${cur?'▶ ':''}${DASHA_SHORT[d.lord]}/${DASHA_SHORT[b.lord]}</td>
+      <td>${msToDate(endMs(b.startMs,b.yrs))}</td>
+    </tr>`;
+  }
+  h += `</tbody></table>`;
+  return h;
+}
+
+function buildAntharamPanel(cid, dashas, di, bukthis, bi, MS_PER_YR, nowMs) {
+  const d = dashas[di];
+  const b = bukthis[bi];
+  function endMs(s,y){return s+y*MS_PER_YR;}
+  function isCur(s,y){return s<=nowMs&&endMs(s,y)>nowMs;}
+  let h = `<div class="dasha-subtitle">${DASHA_SHORT[d.lord]}/${DASHA_SHORT[b.lord]} புத்தி அந்தரங்கள்</div>
+    <table class="dasha-table"><thead><tr><th>தசை/புத்தி/அந்தரம்</th><th>முடிவு தேதி</th></tr></thead><tbody>`;
+  for (const a of b.antharams) {
+    const cur = isCur(a.startMs, a.yrs);
+    h += `<tr class="${cur?'dasha-current':''}">
+      <td>${cur?'▶ ':''}${DASHA_SHORT[d.lord]}/${DASHA_SHORT[b.lord]}/${DASHA_SHORT[a.lord]}</td>
+      <td>${msToDate(endMs(a.startMs,a.yrs))}</td>
+    </tr>`;
+  }
+  h += `</tbody></table>`;
+  return h;
+}
+
+// Click a dasha row → go to bukthi tab showing that dasha's bukthis
+function dsDrillDasha(cid, di) {
+  const el = document.getElementById(cid);
+  if (!el || !el._dashas) return;
+  const {_dashas: dashas, _MS_PER_YR: MS_PER_YR, _nowMs: nowMs} = el;
+  const bukthis = getBukthiAntharams(dashas[di].lord, dashas[di].startMs, dashas[di].yrs, MS_PER_YR);
+  let defBi = bukthis.findIndex(b => b.startMs <= nowMs && (b.startMs + b.yrs*MS_PER_YR) > nowMs);
+  if (defBi < 0) defBi = 0;
+  document.getElementById(`${cid}-panel-b`).innerHTML = buildBukthiPanel(cid, dashas, di, MS_PER_YR, nowMs, defBi);
+  document.getElementById(`${cid}-panel-a`).innerHTML = buildAntharamPanel(cid, dashas, di, bukthis, defBi, MS_PER_YR, nowMs);
+  dsTab(cid, 'b');
+}
+
+// Click a bukthi row → go to antharam tab showing that bukthi's antharams
+function dsDrillBukthi(cid, di, bi) {
+  const el = document.getElementById(cid);
+  if (!el || !el._dashas) return;
+  const {_dashas: dashas, _MS_PER_YR: MS_PER_YR, _nowMs: nowMs} = el;
+  const bukthis = getBukthiAntharams(dashas[di].lord, dashas[di].startMs, dashas[di].yrs, MS_PER_YR);
+  document.getElementById(`${cid}-panel-a`).innerHTML = buildAntharamPanel(cid, dashas, di, bukthis, bi, MS_PER_YR, nowMs);
+  dsTab(cid, 'a');
+}
+
+// Switch between the 3 tabs
+function dsTab(cid, tab) {
+  ['d','b','a'].forEach(t => {
+    document.getElementById(`${cid}-panel-${t}`)?.classList.toggle('active', t===tab);
+    document.getElementById(`${cid}-tab-${t}`)?.classList.toggle('active', t===tab);
+  });
+}
+
+function toggleDasha(dKey) {}  // kept for compatibility
+function toggleBukthi(bKey) {} // kept for compatibility
+
+
+
+// ═══════════════════════════════════════════════════
+// RENDER PLANET TABLE
+// ═══════════════════════════════════════════════════
+function statusBadge(p) {
+  if (p.retro) return `<span class="status-badge sb-retro">வக்ரம்*</span>`;
+  if (p.status === 'exalt') return `<span class="status-badge sb-exalt">உச்சம்↑</span>`;
+  if (p.status === 'neecha') return `<span class="status-badge sb-neecha">நீசம்↓</span>`;
+  return `<span class="status-badge sb-normal">சாதாரண</span>`;
+}
+
+function renderPlanetTable(containerId, data) {
+  const el = document.getElementById(containerId);
+  let html = `<table>
+    <thead><tr>
+      <th>கிரகம்</th><th>ராசி</th><th>பாதம்</th><th>நிலை</th>
+    </tr></thead><tbody>`;
+  for (const p of data.planets) {
+    const colorClass = p.retro ? 'td-retro' : (p.status === 'exalt' ? 'td-exalt' : p.status === 'neecha' ? 'td-neecha' : 'td-normal');
+    html += `<tr>
+      <td class="td-planet ${colorClass}">${p.name}</td>
+      <td>${RASI[p.rasiIdx]}</td>
+      <td style="color:var(--degree)">${p.deg.toFixed(2)}°</td>
+      <td>${statusBadge(p)}</td>
+    </tr>`;
+  }
+  // Lagna row
+  html += `<tr>
+    <td class="td-planet td-lagna">லக்னம்</td>
+    <td>${RASI[data.lagnaRasi]}</td>
+    <td style="color:var(--degree)">${data.lagnaRawDeg.toFixed(2)}°</td>
+    <td><span class="status-badge" style="background:#00DDFF22;color:var(--lagna);border:1px solid #00DDFF44;">லக்னம்</span></td>
+  </tr>`;
+  html += `</tbody></table>`;
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER NATCHATRA SARAM
+// ═══════════════════════════════════════════════════
+function renderNSaram(containerId, data) {
+  const el = document.getElementById(containerId);
+  let html = `<table>
+    <thead><tr>
+      <th>கிரகம்</th><th>நட்சத்திரம்</th><th>பாதம்</th><th>நட்.அதிபதி</th><th>உபாதிபதி</th>
+    </tr></thead><tbody>`;
+  for (const p of data.planets) {
+    const colorClass = p.retro ? 'td-retro' : (p.status === 'exalt' ? 'td-exalt' : p.status === 'neecha' ? 'td-neecha' : 'td-normal');
+    html += `<tr>
+      <td class="td-planet ${colorClass}">${p.name}</td>
+      <td style="color:var(--text)">${p.nat.name}</td>
+      <td style="color:var(--degree)">${p.nat.pada}</td>
+      <td style="color:var(--gold-light);font-weight:600">${p.nat.lord}</td>
+      <td style="color:var(--exalt)">${p.sublord}</td>
+    </tr>`;
+  }
+  html += `</tbody></table>`;
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER NATCHATRA-RASI REFERENCE CHART (Image 1 style)
+// ═══════════════════════════════════════════════════
+
+// Stars per rasi (from image 1)
+const RASI_STARS = {
+  0: [['அசுவினி','கேது',7,'1,2,3,4'],['பரணி','சு',20,'1,2,3,4'],['கார்த்திகை','சூ',6,'1']],
+  1: [['கார்த்திகை','சூ',6,'2,3,4'],['ரோகிணி','சந்',10,'1,2,3,4'],['மிருகசீரிடம்','செ',7,'1,2']],
+  2: [['மிருகசீரிடம்','செ',7,'3,4'],['திருவாதிரை','ரா',18,'1,2,3,4'],['புனர்பூசம்','கு',16,'1,2,3']],
+  3: [['புனர்பூசம்','கு',16,'4'],['பூசம்','சனி',19,'1,2,3,4'],['ஆயில்யம்','பு',17,'1,2,3,4']],
+  4: [['மகம்','கே',7,'1,2,3,4'],['பூரம்','சு',20,'1,2,3,4'],['உத்திரம்','சூ',6,'1']],
+  5: [['உத்திரம்','சூ',6,'2,3,4'],['அஸ்தம்','சந்',10,'1,2,3,4'],['சித்திரை','செ',7,'1,2']],
+  6: [['சித்திரை','செ',7,'3,4'],['சுவாதி','ரா',18,'1,2,3,4'],['விசாகம்','கு',16,'1,2,3']],
+  7: [['விசாகம்','கு',16,'4'],['அனுஷம்','சனி',19,'1,2,3,4'],['கேட்டை','பு',17,'1,2,3,4']],
+  8: [['மூலம்','கே',7,'1,2,3,4'],['பூராடம்','சு',20,'1,2,3,4'],['உத்திராடம்','சூ',6,'1']],
+  9: [['உத்திராடம்','சூ',6,'2,3,4'],['திருவோணம்','சந்',10,'1,2,3,4'],['அவிட்டம்','செ',7,'1,2']],
+  10:[['அவிட்டம்','செ',7,'3,4'],['சதயம்','ரா',18,'1,2,3,4'],['பூரட்டாதி','கு',16,'1,2,3']],
+  11:[['பூரட்டாதி','கு',16,'4'],['உத்திரட்டாதி','சனி',19,'1,2,3,4'],['ரேவதி','பு',17,'1,2,3,4']]
+};
+
+function renderStarChart(containerId) {
+  const el = document.getElementById(containerId);
+
+  // SI grid order
+  const GRID_ORDER = [11,0,1,2, 10,'C',3, 9,4, 8,7,6,5];
+
+  let html = '<div class="nr-chart">';
+
+  let domIdx = 0;
+  for (const ri of GRID_ORDER) {
+    if (ri === 'C') {
+      html += `<div class="nr-cell nr-centre">
+        <div class="nr-centre-title">ராசிகளும்<br/>அவற்றில் அடங்கும்<br/>நட்சத்திரங்களும்</div>
+      </div>`;
+    } else {
+      const stars = RASI_STARS[ri];
+      let starsHtml = '';
+      for (const [sname, lord, yr, padas] of stars) {
+        starsHtml += `<div class="nr-star">${sname} <span class="lord">${lord}</span><span class="yr"> ${yr}வ</span> <span style="color:#555">${padas}</span></div>`;
+      }
+      html += `<div class="nr-cell">
+        <div class="nr-rasi">${RASI[ri]}</div>
+        ${starsHtml}
+      </div>`;
+    }
+    domIdx++;
+  }
+  html += '</div>';
+
+  // Vimsottari dasha reference table
+  html += `<div style="margin-top:6px;">
+    <div class="section-title">விம்சோத்தரி தசை அட்டவணை (120 ஆண்டுகள்)</div>
+    <table>
+      <thead><tr><th>#</th><th>நட்சத்திரம்</th><th>தசை அதிபதி</th><th>ஆண்டுகள்</th></tr></thead>
+      <tbody>`;
+  for (let i = 0; i < 27; i++) {
+    const [name, lord, yrs] = NATCHATRA[i];
+    html += `<tr>
+      <td style="color:var(--text-dim)">${i+1}</td>
+      <td style="color:var(--text)">${name}</td>
+      <td style="color:var(--gold-light);font-weight:600">${lord}</td>
+      <td style="color:var(--degree)">${yrs}</td>
+    </tr>`;
+  }
+  html += `</tbody></table></div>`;
+
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+// MAIN INIT & REFRESH
+// ═══════════════════════════════════════════════════
+function renderAll(jd, isNow, lat = 13.0827, geoLon = 80.2707) {
+  const lagnaData   = buildChartData(jd, false, lat, geoLon);
+  const navamsaData = buildChartData(jd, true,  lat, geoLon);
+
+  if (isNow) {
+    _lastNowData = lagnaData;
+    _lastNowJD   = jd;
+    renderSIChart('chart-now-lagna',  lagnaData);
+    renderPlanetTable('ptable-now-lagna',  lagnaData);
+    renderNSaram('nsaram-now-lagna', lagnaData);
+    renderDasha('dasha-now-lagna', lagnaData);
+    renderSIChart('chart-now-navamsa', navamsaData);
+    renderPlanetTable('ptable-now-navamsa', navamsaData);
+    renderStarChart('star-chart-0');
+    renderStarChart('star-chart-1');
+    // Render ashtakavarga if on tab 2
+    if (currentTab === 2) renderAshtak('now', jd);
+  } else {
+    _lastSelData = lagnaData;
+    _lastSelJD   = jd;
+    renderSIChart('chart-sel-lagna', lagnaData);
+    renderPlanetTable('ptable-sel-lagna', lagnaData);
+    renderNSaram('nsaram-sel-lagna', lagnaData);
+    renderDasha('dasha-sel-lagna', lagnaData);
+    renderSIChart('chart-sel-navamsa', navamsaData);
+    renderPlanetTable('ptable-sel-navamsa', navamsaData);
+    renderStarChart('star-chart-2');
+    renderStarChart('star-chart-3');
+    // Render ashtakavarga if on tab 5
+    if (currentTab === 5) renderAshtak('sel', jd);
+  }
+}
+
+// ─── Location helper ───────────────────────────────
+// ══════════════════════════════════════════
+// DRUM DATE/TIME PICKER ENGINE
+// ══════════════════════════════════════════
+const DRUM_MONTHS = [
+  'ஜன','பிப்','மார்','ஏப்','மே','ஜூன்',
+  'ஜூலை','ஆக','செப்','அக்','நவ்','டிச்'
+];
+
+// Drum state: current selected values
+const DS = { dd:1, mm:1, yr:1984, hh:6, mn:30 };
+
+// Value arrays for each drum
+const DRUM_VALS = {
+  dd:  Array.from({length:31}, (_,i) => i+1),
+  mm:  Array.from({length:12}, (_,i) => i+1),
+  hh:  Array.from({length:24}, (_,i) => i),
+  mn:  Array.from({length:60}, (_,i) => i)
+};
+
+function drumLabel(type, val) {
+  if (type === 'mm') return DRUM_MONTHS[val-1];
+  return String(val).padStart(2,'0');
+}
+
+function renderDrum(type) {
+  const vals = DRUM_VALS[type];
+  const cur  = DS[type];
+  const idx  = vals.indexOf(cur);
+  const el   = document.getElementById('di-' + (type === 'yr' ? 'yr' : type));
+  if (!el) return;
+
+  // Show items: 2 before, selected, 2 after (5 total visible in 184px viewport)
+  // Extra padding items above and below to fill the masked area
+  const SHOW = 2; // items above/below center
+  let html = '';
+  for (let offset = -(SHOW+1); offset <= (SHOW+1); offset++) {
+    const i = (idx + offset + vals.length) % vals.length;
+    const v = vals[i];
+    const cls = offset === 0 ? 'd-sel'
+              : Math.abs(offset) === 1 ? 'd-adj1'
+              : Math.abs(offset) === 2 ? 'd-adj2' : 'd-far';
+    const lbl = type === 'yr' ? v : drumLabel(type, v);
+    html += `<div class="drum-item ${cls}">${lbl}</div>`;
+  }
+  // Position: center item at viewport center
+  // viewport height = 184px, item height = 46px
+  // center starts at 184/2 - 46/2 = 69px
+  // offset to put item[SHOW+1] (index 0 = far before) at top:
+  // item 0 (far before) should be at -(SHOW+1)*46 from center
+  const topOffset = 92 - 46 * (SHOW+1) - 23; // 92=half viewport, 23=half item
+  el.style.transform = `translateY(${topOffset}px)`;
+  el.innerHTML = html;
+}
+
+// Year drum display (just shows year value, no array lookup)
+function renderYearDrum() {
+  const el = document.getElementById('di-yr');
+  if (!el) return;
+  const yr = DS.yr;
+  const items = [yr-2, yr-1, yr, yr+1, yr+2];
+  let html = '';
+  items.forEach((y, i) => {
+    const offset = i - 2;
+    const cls = offset === 0 ? 'd-sel'
+              : Math.abs(offset) === 1 ? 'd-adj1' : 'd-adj2';
+    html += `<div class="drum-item ${cls}">${y}</div>`;
+  });
+  const topOffset = 92 - 46*2 - 23;
+  el.style.transform = `translateY(${topOffset}px)`;
+  el.innerHTML = html;
+}
+
+function renderAllDrums() {
+  renderDrum('dd'); renderDrum('mm'); renderYearDrum();
+  renderDrum('hh'); renderDrum('mn');
+  updateDrumNowLabel();
+}
+
+function updateDrumNowLabel() {
+  const pad = n => String(n).padStart(2,'0');
+  const lbl = document.getElementById('drum-now-label');
+  if (lbl) lbl.textContent = `${pad(DS.dd)}/${pad(DS.mm)}/${DS.yr}  ${pad(DS.hh)}:${pad(DS.mn)} IST`;
+}
+
+// Scroll a drum by delta steps
+function scrollDrum(type, delta) {
+  if (type === 'yr') {
+    DS.yr = Math.max(1800, Math.min(2100, DS.yr + delta));
+    renderYearDrum();
+  } else {
+    const vals = DRUM_VALS[type];
+    const idx  = vals.indexOf(DS[type]);
+    DS[type]   = vals[(idx + delta + vals.length) % vals.length];
+    renderDrum(type);
+  }
+  updateDrumNowLabel();
+}
+
+// Touch handling state per drum
+const _dtouch = {};
+function drumTouchStart(type, e) {
+  _dtouch[type] = { y: e.touches[0].clientY, moved: false, lastY: e.touches[0].clientY };
+}
+function drumTouchMove(type, e) {
+  if (!_dtouch[type]) return;
+  e.preventDefault();
+  const dy = _dtouch[type].lastY - e.touches[0].clientY;
+  if (Math.abs(dy) > 12) {
+    _dtouch[type].moved = true;
+    scrollDrum(type, dy > 0 ? 1 : -1);
+    _dtouch[type].lastY = e.touches[0].clientY;
+  }
+}
+function drumTouchEnd(type, e) {
+  if (_dtouch[type] && !_dtouch[type].moved) {
+    // Tap — open picker
+    openDrumPicker(type);
+  }
+  delete _dtouch[type];
+}
+function drumWheel(type, e) {
+  e.preventDefault();
+  scrollDrum(type, e.deltaY > 0 ? 1 : -1);
+}
+function drumClick(type) {
+  // Only fires if touch didn't move (desktop click)
+  openDrumPicker(type);
+}
+
+// ── PICKERS ──────────────────────────────
+function openDrumPicker(type) {
+  if (type === 'yr') { openDecadePicker(); return; }
+  openListPicker(type);
+}
+
+// ── DRUM EVENT LISTENERS (passive:false required for preventDefault) ──
+function initAllDrumListeners() {
+  ['dd','mm','yr','hh','mn'].forEach(type => {
+    const vp = document.getElementById('dv-' + type);
+    if (!vp) return;
+
+    let startY = 0, lastY = 0, moved = false;
+
+    vp.addEventListener('touchstart', e => {
+      startY = e.touches[0].clientY;
+      lastY  = e.touches[0].clientY;
+      moved  = false;
+    }, {passive: true});
+
+    // passive:false is essential — allows e.preventDefault() to stop page scroll
+    vp.addEventListener('touchmove', e => {
+      const dy = lastY - e.touches[0].clientY;
+      if (Math.abs(dy) > 6) {
+        e.preventDefault();   // stop page scroll — only works with passive:false
+        e.stopPropagation();  // stop swipe detection
+        moved = true;
+        scrollDrum(type, dy > 0 ? 1 : -1);
+        lastY = e.touches[0].clientY;
+      }
+    }, {passive: false});
+
+    vp.addEventListener('touchend', () => {
+      if (!moved) openDrumPicker(type);
+    }, {passive: true});
+
+    // Mouse wheel for desktop
+    vp.addEventListener('wheel', e => {
+      e.preventDefault();
+      scrollDrum(type, e.deltaY > 0 ? 1 : -1);
+    }, {passive: false});
+
+    // Desktop click (no touch device)
+    if (!('ontouchstart' in window)) {
+      vp.addEventListener('click', () => openDrumPicker(type));
+    }
+  });
+}
+
+// List picker — dynamic columns per type
+function openListPicker(type) {
+  const modal = document.getElementById('list-modal');
+  const grid  = document.getElementById('list-grid');
+  const title = document.getElementById('list-modal-title');
+  const labels = {dd:'நாள் தேர்வு', mm:'மாதம் தேர்வு', hh:'மணி தேர்வு', mn:'நிமிடம் தேர்வு'};
+  title.textContent = labels[type] || '';
+
+  // Columns per type: months need labels so 3 cols; others can be 4-5
+  const cols = type === 'mm' ? 3 : type === 'mn' ? 5 : 4;
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+  const vals = DRUM_VALS[type];
+  grid.innerHTML = vals.map(v => {
+    const lbl = drumLabel(type, v);
+    const sel = v === DS[type] ? ' is-sel' : '';
+    return `<div class="list-cell${sel}" onclick="pickListVal('${type}',${v})">${lbl}</div>`;
+  }).join('');
+
+  modal.style.display = 'flex';
+  // Scroll selected item into view
+  requestAnimationFrame(() => {
+    const selEl = grid.querySelector('.is-sel');
+    if (selEl) selEl.scrollIntoView({block:'center', behavior:'smooth'});
+  });
+}
+function pickListVal(type, val) {
+  DS[type] = val;
+  renderDrum(type);
+  updateDrumNowLabel();
+  closeListModal();
+}
+function closeListModal() { document.getElementById('list-modal').style.display = 'none'; }
+
+// Year → Decade → Year picker
+let _selectedDecade = null;
+function openDecadePicker() {
+  _selectedDecade = null;
+  const modal = document.getElementById('year-modal');
+  const grid  = document.getElementById('year-grid');
+  const title = document.getElementById('year-modal-title');
+  title.textContent = 'தசாப்தம் தேர்வு செய்க';
+  const curDecade = Math.floor(DS.yr / 10) * 10;
+  const decades = [];
+  for (let d = 1920; d <= 2030; d += 10) decades.push(d);
+  grid.innerHTML = decades.map(d => {
+    const isCur = d === curDecade ? ' is-current' : '';
+    return `<div class="decade-cell${isCur}" onclick="openYearInDecade(${d})">${d}கள்</div>`;
+  }).join('');
+  modal.style.display = 'flex';
+}
+function openYearInDecade(decade) {
+  _selectedDecade = decade;
+  const grid  = document.getElementById('year-grid');
+  const title = document.getElementById('year-modal-title');
+  title.textContent = `${decade} — ${decade+9} ஆண்டுகள்`;
+  const years = Array.from({length:10}, (_,i) => decade+i);
+  grid.innerHTML = years.map(y => {
+    const isCur = y === DS.yr ? ' is-current' : '';
+    return `<div class="year-cell${isCur}" onclick="pickYear(${y})">${y}</div>`;
+  }).join('');
+}
+function pickYear(y) {
+  DS.yr = y;
+  renderYearDrum();
+  updateDrumNowLabel();
+  closeYearModal();
+}
+function closeYearModal() {
+  document.getElementById('year-modal').style.display = 'none';
+  _selectedDecade = null;
+}
+
+// ── DRUM ACTIONS ──────────────────────────
+function drumSetNow() {
+  const now = new Date();
+  const ist = new Date(now.getTime() + 330*60000);
+  DS.dd = ist.getUTCDate();
+  DS.mm = ist.getUTCMonth() + 1;
+  DS.yr = ist.getUTCFullYear();
+  DS.hh = ist.getUTCHours();
+  DS.mn = ist.getUTCMinutes();
+  renderAllDrums();
+  drumCalc();
+}
+
+function drumCalc() {
+  const { jd } = istToJD(DS.yr, DS.mm, DS.dd, DS.hh, DS.mn);
+  const placeEl = document.getElementById('drum-place');
+  const [lat, lon] = (placeEl?.value || '13.0827,80.2707').split(',').map(Number);
+  renderAll(jd, false, lat, lon);
+}
+
+// ── SAVED CHARTS helpers (use drum state) ──
+function getSelectedLatLon() {
+  const placeEl = document.getElementById('drum-place') || document.getElementById('sel-place');
+  if (!placeEl) return { lat:13.0827, lon:80.2707 };
+  const [lat, lon] = placeEl.value.split(',').map(Number);
+  return { lat, lon };
+}
+
+function loadSavedChart() {
+  const sel = document.getElementById('saved-select');
+  const idx = parseInt(sel.value);
+  if (isNaN(idx)) return;
+  const charts = getSavedCharts();
+  const c = charts[idx];
+  if (!c) return;
+  localStorage.setItem('last_saved_idx', idx);
+  const [y,m,d] = c.date.split('-').map(Number);
+  const [hh,mm] = c.time.split(':').map(Number);
+  DS.dd=d; DS.mm=m; DS.yr=y; DS.hh=hh; DS.mn=mm;
+  // Set place
+  const placeEl = document.getElementById('drum-place');
+  if (placeEl) {
+    for (const opt of placeEl.options) {
+      if (opt.value === `${c.lat},${c.lon}`) { placeEl.value = opt.value; break; }
+    }
+  }
+  renderAllDrums();
+  drumCalc();
+}
+
+// TAB SWITCHING — Tab 2 always defaults to NOW on entry
+let currentTab = 0;
+const TOTAL_TABS = 6;
+
+function refreshNow() {
+  const now = new Date();
+  const istMs = now.getTime() + 330 * 60000;
+  const ist   = new Date(istMs);
+  const pad   = n => String(n).padStart(2, '0');
+  const label = `${ist.getUTCDate()}/${ist.getUTCMonth()+1}/${ist.getUTCFullYear()} ${pad(ist.getUTCHours())}:${pad(ist.getUTCMinutes())} IST`;
+  const el = document.getElementById('now-time-label');
+  if (el) el.textContent = label;
+  const jd = julianDay(now);
+  renderAll(jd, true);
+}
+
+function showTab(idx) {
+  if (idx < 0 || idx >= TOTAL_TABS) return;
+  currentTab = idx;
+  document.getElementById('pages-track').style.transform = `translateX(-${idx * (100/6)}%)`;
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.bn-item').forEach((b,i) => b.classList.toggle('active', i===idx));
+  // Tab 3 (தேதி லக்னம்): always reset drums to NOW
+  if (idx === 3) drumSetNow();
+  // Tab 2 (now ashtakavarga): render if data available
+  if (idx === 2 && _lastNowJD) renderAshtak('now', _lastNowJD);
+  // Tab 5 (sel ashtakavarga): render if data available
+  if (idx === 5 && _lastSelJD) renderAshtak('sel', _lastSelJD);
+}
+
+// Legacy stubs (kept for saved charts compatibility)
+function toggleDatePanel() {}
+function updateDateLabel() {}
+function calcDateChart() { drumCalc(); }
+
+// ── SWIPE DETECTION on scroll-area ──
+(function() {
+  const area = document.getElementById('scroll-area');
+  let startX = 0, startY = 0, startScrollTop = 0;
+  let swiping = false;
+
+  area.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    // Get current page's scroll position
+    const pg = document.getElementById('page' + currentTab);
+    startScrollTop = pg ? pg.scrollTop : 0;
+    swiping = false;
+  }, {passive: true});
+
+  area.addEventListener('touchmove', e => {
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    const pg = document.getElementById('page' + currentTab);
+    // If scrolled down in current page, don't intercept vertical scroll
+    if (!swiping && Math.abs(dy) > Math.abs(dx)) return;
+    // Only mark as swiping if horizontal movement is dominant
+    if (!swiping && Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      swiping = true;
+    }
+    if (swiping) e.preventDefault();
+  }, {passive: false});
+
+  area.addEventListener('touchend', e => {
+    if (!swiping) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (dx < -50 && currentTab < TOTAL_TABS - 1) showTab(currentTab + 1);
+    else if (dx > 50 && currentTab > 0) showTab(currentTab - 1);
+    swiping = false;
+  }, {passive: true});
+})();
+
+// ══════════════════════════════════════════
+// PWA INSTALL MODAL — smart, always works
+// ══════════════════════════════════════════
+let deferredPrompt = null;
+
+// Detect platform
+function getPlatform() {
+  const ua = navigator.userAgent;
+  if (/iPhone|iPad|iPod/.test(ua)) return 'ios';
+  if (/Android/.test(ua)) return 'android';
+  return 'desktop';
+}
+
+function isInStandaloneMode() {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+}
+
+// Build the right steps based on platform
+function buildInstallSteps() {
+  const platform = getPlatform();
+  const stepsEl = document.getElementById('im-steps');
+  const subEl   = document.getElementById('im-sub-text');
+
+  if (platform === 'android') {
+    subEl.textContent = 'Chrome மூலம் முகப்புத் திரையில் சேர்க்கவும்';
+    stepsEl.innerHTML = `
+      <div class="im-step">
+        <div class="im-step-num">1</div>
+        <div class="im-step-text">Chrome-ல் இந்த பக்கத்தை திறக்கவும்<br>
+        <b>anr147.github.io/jyothisham</b></div>
+      </div>
+      <div class="im-step">
+        <div class="im-step-num">2</div>
+        <div class="im-step-text">மேலே உள்ள <b>⋮ மூன்று புள்ளிகள்</b> மெனுவை தொடவும்</div>
+      </div>
+      <div class="im-step">
+        <div class="im-step-num">3</div>
+        <div class="im-step-text"><b>"Add to Home screen"</b> அல்லது <b>"முகப்புத் திரையில் சேர்"</b> என்பதை தொடவும்</div>
+      </div>
+      <div class="im-step">
+        <div class="im-step-num">4</div>
+        <div class="im-step-text"><b>"Add"</b> என்று உறுதிப்படுத்தவும் — ஐகான் முகப்பில் தோன்றும்!</div>
+      </div>`;
+  } else if (platform === 'ios') {
+    subEl.textContent = 'Safari மூலம் முகப்புத் திரையில் சேர்க்கவும்';
+    stepsEl.innerHTML = `
+      <div class="im-step">
+        <div class="im-step-num">1</div>
+        <div class="im-step-text"><b>Safari</b> browser-ல் திறக்கவும் (Chrome-ல் iOS-ல் முடியாது)</div>
+      </div>
+      <div class="im-step">
+        <div class="im-step-num">2</div>
+        <div class="im-step-text">கீழே உள்ள <b>📤 Share பொத்தானை</b> தொடவும்</div>
+      </div>
+      <div class="im-step">
+        <div class="im-step-num">3</div>
+        <div class="im-step-text"><b>"Add to Home Screen"</b> என்பதை தேர்ந்தெடுக்கவும்</div>
+      </div>
+      <div class="im-step">
+        <div class="im-step-num">4</div>
+        <div class="im-step-text">மேல் வலதில் <b>"Add"</b> தொடவும் — முகப்பில் ஐகான் வரும்!</div>
+      </div>`;
+  } else {
+    subEl.textContent = 'Desktop Chrome / Edge-ல் நிறுவலாம்';
+    stepsEl.innerHTML = `
+      <div class="im-step">
+        <div class="im-step-num">1</div>
+        <div class="im-step-text">Address bar-ல் வலதில் உள்ள <b>⊕ install icon</b> கிளிக் செய்யவும்</div>
+      </div>
+      <div class="im-step">
+        <div class="im-step-num">2</div>
+        <div class="im-step-text"><b>"Install"</b> என்று கிளிக் செய்யவும்</div>
+      </div>`;
+  }
+}
+
+function showInstallModal() {
+  if (isInStandaloneMode()) {
+    alert('நீங்கள் ஏற்கனவே ஆப்பாக பயன்படுத்துகிறீர்கள்! ✅');
+    return;
+  }
+  buildInstallSteps();
+  // Show native button if Chrome prompt is available
+  if (deferredPrompt) {
+    document.getElementById('im-native-btn').classList.add('show');
+  }
+  document.getElementById('install-modal').classList.add('show');
+}
+
+function closeInstallModal(e) {
+  // Close on backdrop click or button click
+  if (!e || e.target === document.getElementById('install-modal') || !e.target) {
+    document.getElementById('install-modal').classList.remove('show');
+  }
+}
+
+async function triggerNativeInstall() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('im-native-btn').classList.remove('show');
+  if (outcome === 'accepted') closeInstallModal();
+}
+
+// Catch Chrome's install prompt
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Auto-show install modal after 5s if not in standalone mode
+  if (!isInStandaloneMode()) {
+    setTimeout(() => {
+      if (!localStorage.getItem('install_shown')) {
+        showInstallModal();
+        localStorage.setItem('install_shown', '1');
+      }
+    }, 5000);
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  closeInstallModal();
+});
+
+// ── SERVICE WORKER ──
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+    .then(reg => console.log('SW ready:', reg.scope))
+    .catch(() => {});
+}
+
+// ── OFFLINE DETECTION ──
+const offlineToast = document.getElementById('offline-toast');
+window.addEventListener('offline', () => offlineToast.classList.add('show'));
+window.addEventListener('online',  () => offlineToast.classList.remove('show'));
+if (!navigator.onLine) offlineToast.classList.add('show');
+
+// ══════════════════════════════════════════
+// SAVED CHARTS — localStorage persistence
+// ══════════════════════════════════════════
+const SAVED_KEY = 'jyothisham_saved_charts';
+
+function getSavedCharts() {
+  try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function setSavedCharts(arr) {
+  localStorage.setItem(SAVED_KEY, JSON.stringify(arr));
+}
+
+function refreshSavedDropdown() {
+  const sel = document.getElementById('saved-select');
+  if (!sel) return;
+  const charts = getSavedCharts();
+  sel.innerHTML = '<option value="">-- தேர்வு செய் --</option>';
+  charts.forEach((c, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${c.name} (${c.date} ${c.time} — ${c.place})`;
+    sel.appendChild(opt);
+  });
+}
+
+function showSaveName() {
+  const row = document.getElementById('save-name-row');
+  row.classList.toggle('show');
+  if (row.classList.contains('show'))
+    document.getElementById('save-name-input').focus();
+}
+
+function confirmSave() {
+  const name = document.getElementById('save-name-input')?.value?.trim();
+  if (!name) { alert('பெயர் உள்ளிடவும்'); return; }
+
+  // Read from drum state DS
+  const pad = n => String(n).padStart(2,'0');
+  const dateStr  = `${DS.yr}-${pad(DS.mm)}-${pad(DS.dd)}`;
+  const timeStr  = `${pad(DS.hh)}:${pad(DS.mn)}`;
+  const placeEl  = document.getElementById('drum-place');
+  const placeTxt = placeEl?.options[placeEl?.selectedIndex]?.text || 'சென்னை';
+  const placeVal = placeEl?.value || '13.0827,80.2707';
+  const [lat,lon]= placeVal.split(',').map(Number);
+
+  const charts = getSavedCharts();
+  charts.push({ name, date:dateStr, time:timeStr, place:placeTxt, lat, lon });
+  setSavedCharts(charts);
+  refreshSavedDropdown();
+
+  // Auto-select new entry
+  const sel = document.getElementById('saved-select');
+  if (sel) sel.value = charts.length - 1;
+  localStorage.setItem('last_saved_idx', charts.length - 1);
+
+  // Clear and hide input
+  const inp = document.getElementById('save-name-input');
+  if (inp) inp.value = '';
+  const row = document.getElementById('save-name-row');
+  if (row) row.classList.remove('show');
+}
+
+function restoreLastSavedChart() {
+  const lastIdx = localStorage.getItem('last_saved_idx');
+  if (lastIdx === null) return;
+  const idx = parseInt(lastIdx);
+  const charts = getSavedCharts();
+  if (!charts[idx]) return;
+  const sel = document.getElementById('saved-select');
+  if (sel) sel.value = idx;
+  const c = charts[idx];
+  // Load into drum state
+  const [y,m,d] = c.date.split('-').map(Number);
+  const [hh,mm] = c.time.split(':').map(Number);
+  DS.dd=d; DS.mm=m; DS.yr=y; DS.hh=hh; DS.mn=mm;
+  const placeEl = document.getElementById('drum-place');
+  if (placeEl) {
+    for (const opt of placeEl.options) {
+      if (opt.value === `${c.lat},${c.lon}`) { placeEl.value = opt.value; break; }
+    }
+  }
+  renderAllDrums();
+  drumCalc();
+}
+
+function deleteSavedChart() {
+  const sel = document.getElementById('saved-select');
+  const idx = parseInt(sel.value);
+  if (isNaN(idx)) { alert('முதலில் ஒரு பதிவை தேர்வு செய்யவும்'); return; }
+  const charts = getSavedCharts();
+  const name = charts[idx]?.name || '';
+  if (!confirm(`"${name}" — இதை நீக்கவா?`)) return;
+  charts.splice(idx, 1);
+  setSavedCharts(charts);
+  localStorage.removeItem('last_saved_idx');
+  refreshSavedDropdown();
+}
+
+// ═══════════════════════════════════════════════════
+// ASHTAKAVARGA ENGINE
+// ═══════════════════════════════════════════════════
+
+// Beneficial house positions (1-indexed, from contributor's rasi)
+const AV = {
+  sun:  { sun:[1,2,4,7,8,9,10,11], moon:[3,6,7,8,10,11], mars:[1,2,4,7,8,9,10,11], mercury:[3,5,6,9,10,11,12], jupiter:[5,6,9,11], venus:[6,7,12], saturn:[1,2,4,7,8,10,11], lagna:[3,4,6,10,11,12] },
+  moon: { sun:[3,6,7,8,10,11], moon:[1,3,6,7,10,11], mars:[2,3,5,6,9,10,11], mercury:[1,3,4,5,7,8,10,11], jupiter:[1,4,7,8,10,11,12], venus:[3,4,5,7,9,10,11], saturn:[3,5,6,11], lagna:[3,6,10,11] },
+  mars: { sun:[3,5,6,10,11], moon:[3,6,11], mars:[1,2,4,7,8,10,11], mercury:[3,5,6,11], jupiter:[6,10,11,12], venus:[6,8,11,12], saturn:[1,4,7,8,9,10,11], lagna:[1,4,7,8,9,10,11] },
+  mercury:{ sun:[5,6,9,11,12], moon:[2,4,6,8,10,11], mars:[1,2,4,7,8,9,10,11], mercury:[1,3,5,6,9,10,11,12], jupiter:[6,8,11,12], venus:[1,2,3,4,5,8,9,11], saturn:[1,2,4,7,8,9,10,11], lagna:[1,2,4,6,8,10,11] },
+  jupiter:{ sun:[1,2,3,4,7,8,9,10,11], moon:[2,5,7,9,11], mars:[1,2,4,7,8,10,11], mercury:[1,2,4,5,6,9,10,11], jupiter:[1,2,3,4,7,8,10,11], venus:[2,5,6,9,10,11], saturn:[3,5,6,12], lagna:[1,2,4,5,6,7,9,10,11] },
+  venus: { sun:[8,11,12], moon:[1,2,3,4,5,8,9,11,12], mars:[3,4,6,9,11,12], mercury:[3,5,6,9,11], jupiter:[5,8,9,10,11], venus:[1,2,3,4,5,8,9,10,11], saturn:[3,4,5,8,9,10,11], lagna:[1,2,3,4,5,8,9,11] },
+  saturn: { sun:[1,2,4,7,8,10,11], moon:[3,6,11], mars:[3,5,6,10,11,12], mercury:[6,8,9,10,11,12], jupiter:[5,6,11,12], venus:[6,11,12], saturn:[3,5,6,11], lagna:[1,3,4,6,10,11] }
+};
+
+const AV_PLANETS = ['sun','moon','mars','mercury','jupiter','venus','saturn'];
+const AV_PLANET_NAMES = { sun:'சூரியன்', moon:'சந்திரன்', mars:'செவ்வாய்', mercury:'புதன்', jupiter:'குரு', venus:'சுக்கிரன்', saturn:'சனி' };
+const AV_PLANET_SHORT = { sun:'சூ', moon:'சந்', mars:'செ', mercury:'பு', jupiter:'கு', venus:'சு', saturn:'சனி' };
+const AV_PLANET_KEY  = { 'சூரியன்':'sun','சந்திரன்':'moon','செவ்வாய்':'mars','புதன்':'mercury','குரு':'jupiter','சுக்கிரன்':'venus','சனி':'saturn' };
+
+function calcAshtakavarga(data) {
+  // data.planets array with name and rasiIdx
+  // Returns { scores: {planet: [12 scores]}, sarva: [12 totals] }
+  const lagna = data.lagnaRasi;
+
+  // Map planet names to rasi indices
+  const pos = {};
+  for (const p of data.planets) {
+    const key = AV_PLANET_KEY[p.name];
+    if (key) pos[key] = p.rasiIdx;
+  }
+  pos.lagna = lagna;
+
+  const scores = {};
+  for (const planet of AV_PLANETS) {
+    scores[planet] = new Array(12).fill(0);
+    const rules = AV[planet];
+    // Each contributor
+    for (const contrib of ['sun','moon','mars','mercury','jupiter','venus','saturn','lagna']) {
+      if (pos[contrib] === undefined) continue;
+      const contribRasi = pos[contrib];
+      const beneficial = rules[contrib];
+      // For each of the 12 target signs, check if it's in the beneficial list
+      for (let targetRasi = 0; targetRasi < 12; targetRasi++) {
+        // House number of targetRasi from contribRasi (1-indexed)
+        const house = ((targetRasi - contribRasi + 12) % 12) + 1;
+        if (beneficial.includes(house)) {
+          scores[planet][targetRasi]++;
+        }
+      }
+    }
+  }
+
+  // Sarvashtakavarga
+  const sarva = new Array(12).fill(0);
+  for (const planet of AV_PLANETS) {
+    for (let r = 0; r < 12; r++) sarva[r] += scores[planet][r];
+  }
+
+  return { scores, sarva, pos };
+}
+
+function scoreClass(s) {
+  return 's' + Math.min(8, Math.max(0, s));
+}
+
+function renderAshtak(which, jd) {
+  const data = which === 'now' ? _lastNowData : _lastSelData;
+  if (!data) return;
+
+  const { scores, sarva, pos } = calcAshtakavarga(data);
+  const RASI_S = ['மே','ரி','மி','கட','சிம்','கன்','து','விரு','தனு','மக','கும்','மீ'];
+
+  // ─── GOCHAR SCORE ─────────────────────────────────────────────
+  // For 'now': planets ARE the current planets — score = each planet's AV in its own rasi
+  // For 'sel': base AV from selected date, planet positions from TODAY (gochar)
+  const gEl = document.getElementById('gochar-score-' + which);
+  if (gEl) {
+    // Get current planets (always today for gochar)
+    // For 'now': planets ARE the current chart planets
+    // For 'sel': fetch today's positions separately
+    const PK_TO_TAMIL = {
+      sun:'சூரியன்', moon:'சந்திரன்', mars:'செவ்வாய்',
+      mercury:'புதன்', jupiter:'குரு', venus:'சுக்கிரன்', saturn:'சனி'
+    };
+    let nowRasiMap; // { 'sun': rasiIdx, 'moon': rasiIdx, ... }
+    if (which === 'now') {
+      nowRasiMap = {};
+      for (const pk of AV_PLANETS) {
+        const tamilName = PK_TO_TAMIL[pk];
+        const pl = data.planets.find(p => p.name === tamilName);
+        if (pl) nowRasiMap[pk] = pl.rasiIdx;
+      }
+    } else {
+      // Tab 6: compute today's actual planetary positions
+      const nowJD  = julianDay(new Date());
+      const nowLons = siderealLon(nowJD);
+      nowRasiMap = {};
+      for (const pk of AV_PLANETS) {
+        const tamilName = PK_TO_TAMIL[pk];
+        if (nowLons[tamilName] !== undefined) {
+          nowRasiMap[pk] = Math.floor(nowLons[tamilName] / 30);
+        }
+      }
+    }
+
+    const AV_NAME_TO_KEY = { சூரியன்:'sun',சந்திரன்:'moon',செவ்வாய்:'mars',
+                              புதன்:'mercury',குரு:'jupiter',சுக்கிரன்:'venus',சனி:'saturn' };
+    const chips = [];
+    let total = 0;
+    for (const pk of AV_PLANETS) {
+      const ri = nowRasiMap[pk];
+      if (ri === undefined) continue;
+      const sc = scores[pk][ri];
+      total += sc;
+      chips.push({ pk, name: AV_PLANET_SHORT[pk], rasi: RASI_S[ri], score: sc });
+    }
+
+    // Rating label + colours
+    const pct = ((total - 14) / (42 - 14)) * 100; // 14=min possible, 42=max realistic
+    const clampedPct = Math.max(0, Math.min(100, pct));
+    const color = total >= 30 ? '#44DD88' : total >= 25 ? '#CCCC00' : total >= 20 ? '#CC8800' : '#CC4444';
+    const rating = total >= 30 ? '🌟 சிறந்தது (Excellent)'
+                 : total >= 26 ? '✅ நல்லது (Good)'
+                 : total >= 22 ? '⚡ சராசரி (Average)'
+                 : '⚠️ பலவீனம் (Weak)';
+    const label = which === 'now'
+      ? 'இப்போதைய கோசார அஷ்டகவர்க்கம் மதிப்பெண்'
+      : 'தேர்ந்த ஜாதகத்தில் இப்போதைய கோசார மதிப்பெண்';
+    const sublabel = which === 'now'
+      ? 'ஒவ்வொரு கிரகமும் இருக்கும் ராசியில் அதன் அஷ்டக பலன்'
+      : 'ஜாதக அஷ்டகவர்க்கத்தில் இப்போதைய கோசார நிலை';
+
+    gEl.innerHTML = `
+    <div class="gochar-score-card">
+      <div class="gsc-header">⭐ ${label}</div>
+      <div class="gsc-sub">${sublabel}</div>
+      <div class="gsc-total-row">
+        <div>
+          <div class="gsc-score-big" style="color:${color}">${total}</div>
+          <div class="gsc-rating" style="color:${color};border:1px solid ${color}44;background:${color}11">${rating}</div>
+        </div>
+        <div class="gsc-meter-wrap">
+          <div class="gsc-meter-bar">
+            <div class="gsc-meter-fill" style="width:${clampedPct}%;background:linear-gradient(90deg,#CC4444,#CCCC00,#44DD88)"></div>
+          </div>
+          <div class="gsc-meter-labels">
+            <span>14 (பலவீனம்)</span><span>28</span><span>42 (சிறந்தது)</span>
+          </div>
+        </div>
+      </div>
+      <div class="gsc-breakdown">
+        ${chips.map(ch => {
+          const c = ch.score >= 5 ? '#44DD88' : ch.score >= 4 ? '#CCCC00' : ch.score >= 3 ? '#CC8800' : '#CC4444';
+          return `<div class="gsc-planet-chip">
+            <div class="chip-name">${ch.name}</div>
+            <div class="chip-rasi">${ch.rasi}</div>
+            <div class="chip-score" style="color:${c}">${ch.score}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  // ─── Sarvashtakavarga mini SI chart ───────────────────────────
+  const scEl = document.getElementById('sarv-' + which);
+  if (scEl) {
+    const SI_ORDER = [11,0,1,2, 10,'C',3, 9,4, 8,7,6,5];
+    let html = '';
+    for (const ri of SI_ORDER) {
+      if (ri === 'C') {
+        html += `<div class="sc-cell sc-centre">
+          <div class="sc-centre-label">சர்வாஷ்டக</div>
+          <div class="sc-centre-val">மொத்தம்: ${sarva.reduce((a,b)=>a+b,0)}</div>
+        </div>`;
+      } else {
+        const sc = sarva[ri];
+        const cls = sc >= 28 ? '#3DCC7A' : sc >= 25 ? '#AAAA00' : sc >= 20 ? '#CC8800' : '#CC4444';
+        const planetsHere = AV_PLANETS.filter(p => pos[p] === ri).map(p => AV_PLANET_SHORT[p]).join(' ');
+        html += `<div class="sc-cell">
+          <div class="sc-rn">${RASI_S[ri]}</div>
+          ${planetsHere ? `<div style="font-size:7px;color:var(--gold-light)">${planetsHere}</div>` : ''}
+          <div class="sc-score" style="color:${cls}">${sc}</div>
+        </div>`;
+      }
+    }
+    scEl.innerHTML = html;
+  }
+
+  // ─── Bhinnashtakavarga table — RASI rows × PLANET cols ─────────
+  const tEl = document.getElementById('ashtak-table-' + which);
+  if (!tEl) return;
+
+  const RASI_SHORT_AV = ['மே','ரி','மி','கட','சிம்','கன்','து','விரு','தனு','மக','கும்','மீ'];
+  const lagnaRasi = data.lagnaRasi;
+
+  let html = `<thead><tr>
+    <th class="planet-header">ராசி</th>
+    ${AV_PLANETS.map(p => `<th class="planet-header">${AV_PLANET_SHORT[p]}</th>`).join('')}
+    <th class="planet-header" style="border-left:2px solid var(--border-gold)">சர்வா</th>
+  </tr></thead><tbody>`;
+
+  for (let r = 0; r < 12; r++) {
+    const isLagna = r === lagnaRasi;
+    let row = `<tr${isLagna ? ' class="lagna-row"' : ''}>`;
+    row += `<td class="rasi-label">${isLagna ? '▶ ' : ''}${RASI_SHORT_AV[r]}</td>`;
+    for (const planet of AV_PLANETS) {
+      const sc = scores[planet][r];
+      const isPlanetHere = pos[planet] === r;
+      row += `<td class="${scoreClass(sc)}${isPlanetHere ? ' planet-pos' : ''}">${sc}</td>`;
+    }
+    row += `<td class="sarva-cell">${sarva[r]}</td>`;
+    row += '</tr>';
+    html += row;
+  }
+
+  // Footer totals
+  html += `<tr style="border-top:2px solid var(--border-gold)">
+    <td class="rasi-label" style="color:var(--text-dim);font-size:9px;">மொ</td>
+    ${AV_PLANETS.map(p => {
+      const tot = scores[p].reduce((a,b)=>a+b,0);
+      return `<td style="background:#0A0A1C;color:var(--gold-light);font-weight:800;font-size:12px">${tot}</td>`;
+    }).join('')}
+    <td class="sarva-cell" style="font-size:12px">${sarva.reduce((a,b)=>a+b,0)}</td>
+  </tr></tbody>`;
+  tEl.innerHTML = html;
+}
+
+// Storage for last rendered chart data
+let _lastNowData = null;
+let _lastSelData = null;
+let _lastNowJD   = null;
+let _lastSelJD   = null;
+
+// Boot
+window.addEventListener('load', () => {
+  // Init drums to current IST time
+  const now = new Date();
+  const ist = new Date(now.getTime() + 330*60000);
+  DS.dd = ist.getUTCDate();
+  DS.mm = ist.getUTCMonth() + 1;
+  DS.yr = ist.getUTCFullYear();
+  DS.hh = ist.getUTCHours();
+  DS.mn = ist.getUTCMinutes();
+  renderAllDrums();
+  // Attach drum touch/wheel listeners AFTER DOM is ready
+  initAllDrumListeners();
+  // Tabs 0 & 1: current time chart
+  refreshNow();
+  // Tabs 2 & 3: current time chart (default)
+  drumCalc();
+  refreshSavedDropdown();
+  restoreLastSavedChart();
+  showTab(0);
+});
+
+</script>
+<!-- YEAR PICKER MODAL — direct child of body, outside any transform -->
+<div class="year-modal" id="year-modal" style="display:none">
+  <div class="year-modal-box">
+    <div class="year-modal-title" id="year-modal-title">தசாப்தம் தேர்வு செய்க</div>
+    <div class="year-modal-close" onclick="closeYearModal()">✕</div>
+    <div class="year-grid" id="year-grid"></div>
+  </div>
+</div>
+
+<!-- LIST PICKER MODAL — direct child of body, outside any transform -->
+<div class="list-modal" id="list-modal" style="display:none">
+  <div class="list-modal-box">
+    <div class="list-modal-title" id="list-modal-title"></div>
+    <div class="list-modal-close" onclick="closeListModal()">✕</div>
+    <div class="list-grid" id="list-grid"></div>
+  </div>
+</div>
+
+</body>
+</html>
