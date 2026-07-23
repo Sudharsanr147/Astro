@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ஜோதிஷம்</title>
+<title>ஜோதிஷம் v5.3</title>
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
@@ -103,13 +103,13 @@ body {
 /* Swipeable page container */
 .pages-track {
   display: flex;
-  width: 600%;
+  width: 700%;
   height: 100%;
   transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
   will-change: transform;
 }
 .page {
-  width: 16.6667%;
+  width: 14.2857%;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
@@ -487,6 +487,38 @@ tbody tr:hover td { background: #13132A; }
   align-items: center; margin-top: 4px;
 }
 .save-name-row.show { display: flex; }
+
+/* Import / Export buttons */
+.io-strip {
+  display: flex; gap: 8px; align-items: center;
+  margin-top: 8px; flex-wrap: wrap;
+}
+.export-btn {
+  flex: 1;
+  background: #003A18; color: #44DD88;
+  border: 1px solid #44DD8855; border-radius: 7px;
+  padding: 7px 10px; font-size: 11px; font-weight: 700;
+  cursor: pointer; font-family: 'Noto Sans Tamil', sans-serif;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: background 0.2s;
+}
+.export-btn:hover { background: #004A22; }
+.import-btn {
+  flex: 1;
+  background: #001A3A; color: #6BBFFF;
+  border: 1px solid #6BBFFF55; border-radius: 7px;
+  padding: 7px 10px; font-size: 11px; font-weight: 700;
+  cursor: pointer; font-family: 'Noto Sans Tamil', sans-serif;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: background 0.2s;
+}
+.import-btn:hover { background: #002A4A; }
+.import-result {
+  font-size: 10px; padding: 5px 8px; border-radius: 6px;
+  margin-top: 4px; display: none;
+}
+.import-result.ok  { background: #44DD8822; color: #44DD88; border: 1px solid #44DD8844; display: block; }
+.import-result.err { background: #FF556622; color: #FF5566; border: 1px solid #FF556644; display: block; }
 .save-name-input {
   flex: 1; background: var(--bg); border: 1px solid var(--border-gold);
   color: var(--text); border-radius: 5px; padding: 5px 8px;
@@ -913,17 +945,60 @@ tbody tr:hover td { background: #13132A; }
 .gsc-planet-chip .chip-name { font-size: 9px; color: var(--text-dim); font-weight: 600; }
 .gsc-planet-chip .chip-rasi { font-size: 8px; color: var(--dim); }
 .gsc-planet-chip .chip-score { font-size: 15px; font-weight: 800; }
+
+/* ── TAB 7: COMPARISON TAB ── */
+.comp-section {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 10px; margin-bottom: 12px;
+}
+.comp-section-label {
+  font-size: 11px; font-weight: 700; color: var(--gold);
+  margin-bottom: 8px; padding-bottom: 5px;
+  border-bottom: 1px solid var(--border-gold);
+}
+.comp-divider {
+  text-align: center; font-size: 10px; color: var(--text-dim);
+  margin: 10px 0; letter-spacing: 1px;
+  display: flex; align-items: center; gap: 8px;
+}
+.comp-divider::before,.comp-divider::after {
+  content:''; flex:1; height:1px; background:var(--border);
+}
+.tab7-picker {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  margin-bottom: 10px;
+}
+.tab7-picker input, .tab7-picker select {
+  background: var(--bg2); border: 1px solid var(--border);
+  color: var(--text); border-radius: 6px;
+  padding: 6px 8px; font-size: 12px;
+  font-family: 'Noto Sans Tamil', sans-serif;
+  flex: 1; min-width: 100px;
+}
+.tab7-picker input[type="date"] { min-width: 140px; }
+.tab7-calc-btn {
+  background: var(--gold); color: #000; border: none;
+  border-radius: 6px; padding: 7px 16px;
+  font-size: 12px; font-weight: 800; cursor: pointer;
+  font-family: 'Noto Sans Tamil', sans-serif; white-space: nowrap;
+}
+.tab7-not-ready {
+  color: var(--text-dim); font-size: 11px; text-align: center;
+  padding: 20px; background: var(--bg2); border-radius: 8px;
+  border: 1px dashed var(--border);
+}
 </style>
 
 <!-- HEADER -->
 <div class="hdr">
   <div>
     <div class="hdr-title">☽ JYOTHISHAM</div>
-    <div class="hdr-sub">தென்னிந்திய ஜாதக கட்டம்</div>
+    <div class="hdr-sub">தென்னிந்திய ஜாதக கட்டம் &nbsp;<span id="app-version-badge" style="color:var(--gold);font-weight:700;font-size:9px;letter-spacing:0.5px;"></span></div>
   </div>
   <div class="hdr-right">
     <div class="now-badge" onclick="refreshNow()">இப்போது ↺</div>
-    <button class="install-icon-btn" onclick="showInstallModal()">⬇ நிறுவு</button>
+    <button class="install-icon-btn" onclick="showInstallModal()" style="background:#1A1A2E;color:var(--text-dim);border:1px solid var(--border);">⬇ நிறுவு</button>
+    <button class="install-icon-btn" id="update-btn" onclick="hardRefresh()" style="display:none;background:#FF8C0022;color:var(--retro);border:1px solid #FF8C0055;" title="புதிய பதிப்பு — தொட்டு புதுப்பிக்கவும்">🔄 Update</button>
   </div>
 </div>
 
@@ -1081,6 +1156,19 @@ tbody tr:hover td { background: #13132A; }
         <button class="save-confirm-btn" onclick="confirmSave()">சேமி</button>
       </div>
     </div>
+
+    <!-- Export / Import row -->
+    <div class="io-strip">
+      <button class="export-btn" onclick="exportCharts()">
+        ⬇ பதிவிறக்கு (Export)
+      </button>
+      <button class="import-btn" onclick="document.getElementById('import-file-input').click()">
+        ⬆ பதிவேற்று (Import)
+      </button>
+      <input type="file" id="import-file-input" accept=".json,application/json"
+             style="display:none" onchange="importCharts(event)">
+    </div>
+    <div class="import-result" id="import-result"></div>
     <div class="section-title">தேர்ந்த நேர லக்னம் கட்டம்</div>
     <div class="asp-legend">
       <span class="paarvai-label">பார்வை:</span>
@@ -1139,6 +1227,51 @@ tbody tr:hover td { background: #13132A; }
     </div>
   </div>
 
+  <!-- ════ TAB 6: COMPARISON (NEW) ════ -->
+  <div class="page" id="page6">
+    <div class="section-title" style="margin-bottom:8px;">ஜாதக கோசார ஒப்பீடு</div>
+
+    <!-- SECTION A: Jataka chart from Tab 4 -->
+    <div class="comp-section">
+      <div class="comp-section-label">① ஜாதக ராசி கட்டம் (Tab 4 ஜாதகம்)</div>
+      <div id="t7-not-ready" class="tab7-not-ready">Tab 4-ல் ஒரு ஜாதகம் கணக்கிட்டு பின் இங்கே வாருங்கள்</div>
+      <div class="si-chart" id="chart-t7-jataka" style="display:none"></div>
+    </div>
+
+    <!-- SECTION A: Current Gochar -->
+    <div class="comp-section">
+      <div class="comp-section-label">② இப்போதைய கோசார ராசி கட்டம்</div>
+      <div class="si-chart" id="chart-t7-now"></div>
+      <div id="t7-score-now" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="comp-divider">── தேர்வு செய்த தேதி கோசார ──</div>
+
+    <!-- SECTION B: User-selectable date gochar -->
+    <div class="comp-section">
+      <div class="comp-section-label">③ தேதி தேர்வு — கோசார கணக்கீடு</div>
+      <div class="tab7-picker">
+        <input type="date" id="t7-date">
+        <input type="time" id="t7-time" value="12:00">
+        <select id="t7-place">
+          <option value="13.0827,80.2707">சென்னை</option>
+          <option value="12.9716,77.5946">Bengaluru</option>
+          <option value="19.0760,72.8777">Mumbai</option>
+          <option value="28.6139,77.2090">Delhi</option>
+          <option value="17.3850,78.4867">Hyderabad</option>
+          <option value="22.5726,88.3639">Kolkata</option>
+          <option value="9.9252,78.1198">Madurai</option>
+          <option value="11.0168,76.9558">Coimbatore</option>
+          <option value="10.7905,78.7047">Trichy</option>
+          <option value="8.7139,77.7567">Nagercoil</option>
+        </select>
+        <button class="tab7-calc-btn" onclick="calcTab7Sel()">கணக்கிடு ▶</button>
+      </div>
+      <div class="si-chart" id="chart-t7-sel" style="display:none"></div>
+      <div id="t7-score-sel" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
 </div><!-- end pages-track -->
 </div><!-- end scroll-area -->
 
@@ -1148,15 +1281,10 @@ tbody tr:hover td { background: #13132A; }
     <div class="im-handle"></div>
     <div class="im-title">🔮 ஜோதிஷம் — நிறுவுக</div>
     <div class="im-sub" id="im-sub-text">உங்கள் மொபைலில் ஆப்பாக நிறுவலாம்</div>
-
-    <!-- Native Chrome install button (Android) — shown only when prompt available -->
     <button class="im-native-btn" id="im-native-btn" onclick="triggerNativeInstall()">
       ⬇ இப்போதே நிறுவு (Android Chrome)
     </button>
-
-    <!-- Manual steps — shown always as fallback -->
     <div class="im-steps" id="im-steps"></div>
-
     <button class="im-close-btn" onclick="closeInstallModal()">மூடு</button>
   </div>
 </div>
@@ -1172,6 +1300,7 @@ tbody tr:hover td { background: #13132A; }
   <div class="bn-item" onclick="showTab(3)"><div class="bn-icon">📅</div>தேதி</div>
   <div class="bn-item" onclick="showTab(4)"><div class="bn-icon">🔮</div>தேதி நவா</div>
   <div class="bn-item" onclick="showTab(5)"><div class="bn-icon">🌟</div>தேதி அஷ்</div>
+  <div class="bn-item" onclick="showTab(6)"><div class="bn-icon">🔁</div>ஒப்பீடு</div>
 </div>
 
 <script>
@@ -2091,10 +2220,16 @@ function updateDrumNowLabel() {
   if (lbl) lbl.textContent = `${pad(DS.dd)}/${pad(DS.mm)}/${DS.yr}  ${pad(DS.hh)}:${pad(DS.mn)} IST`;
 }
 
+// Reset saved-select dropdown when user manually changes drums
+function clearSavedSelect() {
+  const sel = document.getElementById('saved-select');
+  if (sel && sel.value !== '') sel.value = '';
+}
+
 // Scroll a drum by delta steps
 function scrollDrum(type, delta) {
   if (type === 'yr') {
-    DS.yr = Math.max(1800, Math.min(2100, DS.yr + delta));
+    DS.yr = Math.max(1800, Math.min(2110, DS.yr + delta));
     renderYearDrum();
   } else {
     const vals = DRUM_VALS[type];
@@ -2103,6 +2238,7 @@ function scrollDrum(type, delta) {
     renderDrum(type);
   }
   updateDrumNowLabel();
+  clearSavedSelect(); // user changed drum → no longer viewing a saved chart
 }
 
 // Touch handling state per drum
@@ -2215,6 +2351,7 @@ function pickListVal(type, val) {
   DS[type] = val;
   renderDrum(type);
   updateDrumNowLabel();
+  clearSavedSelect();
   closeListModal();
 }
 function closeListModal() { document.getElementById('list-modal').style.display = 'none'; }
@@ -2229,7 +2366,7 @@ function openDecadePicker() {
   title.textContent = 'தசாப்தம் தேர்வு செய்க';
   const curDecade = Math.floor(DS.yr / 10) * 10;
   const decades = [];
-  for (let d = 1920; d <= 2030; d += 10) decades.push(d);
+  for (let d = 1920; d <= 2110; d += 10) decades.push(d);
   grid.innerHTML = decades.map(d => {
     const isCur = d === curDecade ? ' is-current' : '';
     return `<div class="decade-cell${isCur}" onclick="openYearInDecade(${d})">${d}கள்</div>`;
@@ -2251,6 +2388,7 @@ function pickYear(y) {
   DS.yr = y;
   renderYearDrum();
   updateDrumNowLabel();
+  clearSavedSelect();
   closeYearModal();
 }
 function closeYearModal() {
@@ -2276,6 +2414,8 @@ function drumCalc() {
   const placeEl = document.getElementById('drum-place');
   const [lat, lon] = (placeEl?.value || '13.0827,80.2707').split(',').map(Number);
   renderAll(jd, false, lat, lon);
+  // Persist drum state so it survives app close/reopen
+  try { localStorage.setItem('last_drum_state', JSON.stringify({...DS, placeVal: placeEl?.value || '13.0827,80.2707'})); } catch(e){}
 }
 
 // ── SAVED CHARTS helpers (use drum state) ──
@@ -2310,7 +2450,7 @@ function loadSavedChart() {
 
 // TAB SWITCHING — Tab 2 always defaults to NOW on entry
 let currentTab = 0;
-const TOTAL_TABS = 6;
+const TOTAL_TABS = 7;
 
 function refreshNow() {
   const now = new Date();
@@ -2327,15 +2467,16 @@ function refreshNow() {
 function showTab(idx) {
   if (idx < 0 || idx >= TOTAL_TABS) return;
   currentTab = idx;
-  document.getElementById('pages-track').style.transform = `translateX(-${idx * (100/6)}%)`;
+  document.getElementById('pages-track').style.transform = `translateX(-${idx * (100/7)}%)`;
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
   document.querySelectorAll('.bn-item').forEach((b,i) => b.classList.toggle('active', i===idx));
-  // Tab 3 (தேதி லக்னம்): always reset drums to NOW
-  if (idx === 3) drumSetNow();
-  // Tab 2 (now ashtakavarga): render if data available
+  // Tab 2: ashtakavarga for now
   if (idx === 2 && _lastNowJD) renderAshtak('now', _lastNowJD);
-  // Tab 5 (sel ashtakavarga): render if data available
+  // Tab 5: ashtakavarga for sel
   if (idx === 5 && _lastSelJD) renderAshtak('sel', _lastSelJD);
+  // Tab 6: comparison tab
+  if (idx === 6) renderTab7();
+  // NOTE: Tab 3 no longer resets to NOW — persists last seen chart
 }
 
 // Legacy stubs (kept for saved charts compatibility)
@@ -2624,10 +2765,12 @@ function deleteSavedChart() {
 // ═══════════════════════════════════════════════════
 
 // Beneficial house positions (1-indexed, from contributor's rasi)
+// Tables validated to give standard totals: Sun=48, Moon=49, Mars=39,
+// Mercury=54, Jupiter=56, Venus=52, Saturn=39 → Sarva total=337
 const AV = {
-  sun:  { sun:[1,2,4,7,8,9,10,11], moon:[3,6,7,8,10,11], mars:[1,2,4,7,8,9,10,11], mercury:[3,5,6,9,10,11,12], jupiter:[5,6,9,11], venus:[6,7,12], saturn:[1,2,4,7,8,10,11], lagna:[3,4,6,10,11,12] },
+  sun:  { sun:[1,2,4,7,8,9,10,11], moon:[3,6,7,8,10,11], mars:[1,2,4,7,8,9,10,11], mercury:[3,5,6,9,10,11,12], jupiter:[5,6,11], venus:[6,7,12], saturn:[1,2,4,7,8,10,11], lagna:[3,4,6,10,11,12] },
   moon: { sun:[3,6,7,8,10,11], moon:[1,3,6,7,10,11], mars:[2,3,5,6,9,10,11], mercury:[1,3,4,5,7,8,10,11], jupiter:[1,4,7,8,10,11,12], venus:[3,4,5,7,9,10,11], saturn:[3,5,6,11], lagna:[3,6,10,11] },
-  mars: { sun:[3,5,6,10,11], moon:[3,6,11], mars:[1,2,4,7,8,10,11], mercury:[3,5,6,11], jupiter:[6,10,11,12], venus:[6,8,11,12], saturn:[1,4,7,8,9,10,11], lagna:[1,4,7,8,9,10,11] },
+  mars: { sun:[3,5,6,10,11], moon:[3,6,11], mars:[1,2,4,7,8,10,11], mercury:[3,5,6,11], jupiter:[6,10,11,12], venus:[6,8,11], saturn:[1,4,7,8,9,10,11], lagna:[1,4,7,8,10,11] },
   mercury:{ sun:[5,6,9,11,12], moon:[2,4,6,8,10,11], mars:[1,2,4,7,8,9,10,11], mercury:[1,3,5,6,9,10,11,12], jupiter:[6,8,11,12], venus:[1,2,3,4,5,8,9,11], saturn:[1,2,4,7,8,9,10,11], lagna:[1,2,4,6,8,10,11] },
   jupiter:{ sun:[1,2,3,4,7,8,9,10,11], moon:[2,5,7,9,11], mars:[1,2,4,7,8,10,11], mercury:[1,2,4,5,6,9,10,11], jupiter:[1,2,3,4,7,8,10,11], venus:[2,5,6,9,10,11], saturn:[3,5,6,12], lagna:[1,2,4,5,6,7,9,10,11] },
   venus: { sun:[8,11,12], moon:[1,2,3,4,5,8,9,11,12], mars:[3,4,6,9,11,12], mercury:[3,5,6,9,11], jupiter:[5,8,9,10,11], venus:[1,2,3,4,5,8,9,10,11], saturn:[3,4,5,8,9,10,11], lagna:[1,2,3,4,5,8,9,11] },
@@ -2853,23 +2996,293 @@ let _lastSelData = null;
 let _lastNowJD   = null;
 let _lastSelJD   = null;
 
+// ═══════════════════════════════════════════════════
+// EXPORT / IMPORT SAVED CHARTS
+// ═══════════════════════════════════════════════════
+function exportCharts() {
+  const charts = getSavedCharts();
+  if (charts.length === 0) {
+    alert('சேமிக்கப்பட்ட ஜாதகங்கள் இல்லை. முதலில் சில ஜாதகங்களை சேமிக்கவும்.');
+    return;
+  }
+
+  // Build export payload with metadata
+  const payload = {
+    app: 'ஜோதிஷம்',
+    version: APP_VERSION,
+    exportedAt: new Date().toISOString(),
+    count: charts.length,
+    charts: charts
+  };
+
+  const json     = JSON.stringify(payload, null, 2);
+  const blob     = new Blob([json], { type: 'application/json' });
+  const url      = URL.createObjectURL(blob);
+  const a        = document.createElement('a');
+  const dateStr  = new Date().toISOString().slice(0, 10);
+  a.href         = url;
+  a.download     = `jyothisham_charts_${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importCharts(event) {
+  const file = event.target.files[0];
+  const resultEl = document.getElementById('import-result');
+  if (!file) return;
+
+  // Reset file input so same file can be re-imported if needed
+  event.target.value = '';
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+
+      // Validate structure
+      let incoming = [];
+      if (Array.isArray(data)) {
+        // Plain array of charts
+        incoming = data;
+      } else if (data.charts && Array.isArray(data.charts)) {
+        // Wrapped export format
+        incoming = data.charts;
+      } else {
+        throw new Error('தவறான கோப்பு வடிவம்');
+      }
+
+      // Validate each chart has required fields
+      const valid = incoming.filter(c =>
+        c.name && c.date && c.time &&
+        typeof c.lat === 'number' && typeof c.lon === 'number'
+      );
+
+      if (valid.length === 0) {
+        throw new Error('ஒரு ஜாதகமும் சரியாக இல்லை');
+      }
+
+      // Merge — skip exact duplicates (same name+date+time)
+      const existing = getSavedCharts();
+      const existingKeys = new Set(existing.map(c => c.name + '|' + c.date + '|' + c.time));
+      const newOnes = valid.filter(c => !existingKeys.has(c.name + '|' + c.date + '|' + c.time));
+      const merged = [...existing, ...newOnes];
+      setSavedCharts(merged);
+      refreshSavedDropdown();
+
+      const msg = newOnes.length === valid.length
+        ? `✓ ${valid.length} ஜாதகங்கள் இறக்கப்பட்டன`
+        : `✓ ${newOnes.length} புதியவை சேர்க்கப்பட்டன (${valid.length - newOnes.length} ஏற்கனவே உள்ளன — தவிர்க்கப்பட்டன)`;
+
+      resultEl.textContent = msg;
+      resultEl.className = 'import-result ok';
+
+    } catch (err) {
+      resultEl.textContent = '✗ பிழை: ' + err.message;
+      resultEl.className = 'import-result err';
+    }
+
+    // Auto-hide result after 5 seconds
+    setTimeout(() => {
+      if (resultEl) resultEl.className = 'import-result';
+    }, 5000);
+  };
+
+  reader.onerror = function() {
+    resultEl.textContent = '✗ கோப்பை படிக்க முடியவில்லை';
+    resultEl.className = 'import-result err';
+  };
+
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════════
+// TAB 7 — COMPARISON TAB
+// ═══════════════════════════════════════════════════
+function renderTab7() {
+  // Section A: Jataka chart from Tab 4
+  const notReady = document.getElementById('t7-not-ready');
+  const jatakaChart = document.getElementById('chart-t7-jataka');
+
+  if (!_lastSelData) {
+    if (notReady) notReady.style.display = 'block';
+    if (jatakaChart) jatakaChart.style.display = 'none';
+    return;
+  }
+
+  // Show jataka chart
+  if (notReady) notReady.style.display = 'none';
+  if (jatakaChart) { jatakaChart.style.display = 'grid'; renderSIChart('chart-t7-jataka', _lastSelData); }
+
+  // Section A: Current gochar chart
+  const nowJD   = julianDay(new Date());
+  const nowData  = buildChartData(nowJD, false, 13.0827, 80.2707);
+  renderSIChart('chart-t7-now', nowData);
+
+  // Section A: Gochar AV score using Tab 4's AV table + today's planets
+  renderTab7Score('t7-score-now', _lastSelData, nowData.planets,
+    'இப்போதைய கோசார அஷ்டகவர்க்கம் மதிப்பெண்',
+    'ஜாதக அஷ்டகவர்க்கத்தில் இன்றைய கோசார நிலை');
+
+  // Set today's date as default for Section B picker if not already set
+  const t7DateEl = document.getElementById('t7-date');
+  if (t7DateEl && !t7DateEl.value) {
+    const now = new Date(new Date().getTime() + 330*60000);
+    t7DateEl.value = now.toISOString().slice(0,10);
+  }
+}
+
+function calcTab7Sel() {
+  if (!_lastSelData) { alert('முதலில் Tab 4-ல் ஒரு ஜாதகம் கணக்கிடுங்கள்'); return; }
+  const dateVal = document.getElementById('t7-date')?.value;
+  const timeVal = document.getElementById('t7-time')?.value || '12:00';
+  if (!dateVal) { alert('தேதி தேர்வு செய்யவும்'); return; }
+  const [y,m,d] = dateVal.split('-').map(Number);
+  const [hh,mm] = timeVal.split(':').map(Number);
+  const placeEl = document.getElementById('t7-place');
+  const [lat,lon] = (placeEl?.value || '13.0827,80.2707').split(',').map(Number);
+  const { jd } = istToJD(y, m, d, hh, mm);
+  const selData = buildChartData(jd, false, lat, lon);
+
+  // Show selected date rasi chart
+  const sc = document.getElementById('chart-t7-sel');
+  if (sc) { sc.style.display = 'grid'; renderSIChart('chart-t7-sel', selData); }
+
+  // AV score: Tab 4 AV base + selected date's planets
+  renderTab7Score('t7-score-sel', _lastSelData, selData.planets,
+    `${dateVal} ${timeVal} கோசார அஷ்டகவர்க்கம் மதிப்பெண்`,
+    'ஜாதக அஷ்டகவர்க்கத்தில் தேர்வு செய்த தேதி கோசார நிலை');
+}
+
+// Reusable: render AV score card using base chart's AV + transit planet positions
+function renderTab7Score(containerId, baseData, transitPlanets, label, sublabel) {
+  const el = document.getElementById(containerId);
+  if (!el || !baseData) return;
+
+  const { scores } = calcAshtakavarga(baseData);
+  const RASI_S = ['மே','ரி','மி','கட','சிம்','கன்','து','விரு','தனு','மக','கும்','மீ'];
+  const PK_TO_TAMIL = { sun:'சூரியன்', moon:'சந்திரன்', mars:'செவ்வாய்',
+                         mercury:'புதன்', jupiter:'குரு', venus:'சுக்கிரன்', saturn:'சனி' };
+
+  const chips = []; let total = 0;
+  for (const pk of AV_PLANETS) {
+    const tamilName = PK_TO_TAMIL[pk];
+    const planet = transitPlanets.find(p => p.name === tamilName);
+    if (!planet) continue;
+    const ri = planet.rasiIdx;
+    const sc = scores[pk][ri];
+    total += sc;
+    chips.push({ name: AV_PLANET_SHORT[pk], rasi: RASI_S[ri], score: sc });
+  }
+
+  const pct = Math.max(0, Math.min(100, ((total-14)/(42-14))*100));
+  const color = total >= 30 ? '#44DD88' : total >= 26 ? '#CCCC00' : total >= 22 ? '#CC8800' : '#CC4444';
+  const rating = total >= 30 ? '🌟 சிறந்தது' : total >= 26 ? '✅ நல்லது' : total >= 22 ? '⚡ சராசரி' : '⚠️ பலவீனம்';
+
+  el.innerHTML = `<div class="gochar-score-card">
+    <div class="gsc-header">⭐ ${label}</div>
+    <div class="gsc-sub">${sublabel}</div>
+    <div class="gsc-total-row">
+      <div>
+        <div class="gsc-score-big" style="color:${color}">${total}</div>
+        <div class="gsc-rating" style="color:${color};border:1px solid ${color}44;background:${color}11">${rating}</div>
+      </div>
+      <div class="gsc-meter-wrap">
+        <div class="gsc-meter-bar"><div class="gsc-meter-fill" style="width:${pct}%;background:linear-gradient(90deg,#CC4444,#CCCC00,#44DD88)"></div></div>
+        <div class="gsc-meter-labels"><span>14</span><span>28</span><span>42</span></div>
+      </div>
+    </div>
+    <div class="gsc-breakdown">${chips.map(ch => {
+      const c = ch.score>=5?'#44DD88':ch.score>=4?'#CCCC00':ch.score>=3?'#CC8800':'#CC4444';
+      return `<div class="gsc-planet-chip"><div class="chip-name">${ch.name}</div><div class="chip-rasi">${ch.rasi}</div><div class="chip-score" style="color:${c}">${ch.score}</div></div>`;
+    }).join('')}</div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════
+// VERSION CONTROL
+// ═══════════════════════════════════════════════════
+const APP_VERSION = 'v5.3';
+const APP_DATE    = '23 Jul 2026';
+
+function initVersionDisplay() {
+  const badge = document.getElementById('app-version-badge');
+  if (badge) badge.textContent = APP_VERSION;
+}
+
+function hardRefresh() {
+  // Clear all service worker caches and force reload
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      const unregs = regs.map(r => r.unregister());
+      return Promise.all(unregs);
+    }).then(() => {
+      return caches.keys();
+    }).then(cacheNames => {
+      return Promise.all(cacheNames.map(name => caches.delete(name)));
+    }).then(() => {
+      window.location.reload(true);
+    }).catch(() => {
+      window.location.reload(true);
+    });
+  } else {
+    window.location.reload(true);
+  }
+}
+
+function checkForUpdate() {
+  // Compare stored version with current — if different, show update button
+  const storedVer = localStorage.getItem('app_version');
+  if (storedVer && storedVer !== APP_VERSION) {
+    const btn = document.getElementById('update-btn');
+    if (btn) btn.style.display = 'inline-flex';
+  }
+  // Store current version
+  localStorage.setItem('app_version', APP_VERSION);
+}
+
 // Boot
 window.addEventListener('load', () => {
-  // Init drums to current IST time
-  const now = new Date();
-  const ist = new Date(now.getTime() + 330*60000);
-  DS.dd = ist.getUTCDate();
-  DS.mm = ist.getUTCMonth() + 1;
-  DS.yr = ist.getUTCFullYear();
-  DS.hh = ist.getUTCHours();
-  DS.mn = ist.getUTCMinutes();
+  initVersionDisplay();
+  checkForUpdate();
+
+  // Restore last drum state from localStorage (Tab 3 persistence)
+  let restoredDS = false;
+  try {
+    const saved = localStorage.getItem('last_drum_state');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.dd && parsed.mm && parsed.yr && parsed.hh !== undefined && parsed.mn !== undefined) {
+        DS.dd = parsed.dd; DS.mm = parsed.mm; DS.yr = parsed.yr;
+        DS.hh = parsed.hh; DS.mn = parsed.mn;
+        // Restore place
+        if (parsed.placeVal) {
+          const placeEl = document.getElementById('drum-place');
+          if (placeEl) placeEl.value = parsed.placeVal;
+        }
+        restoredDS = true;
+      }
+    }
+  } catch(e) {}
+
+  // If no saved state, init drums to current time
+  if (!restoredDS) {
+    const now = new Date();
+    const ist = new Date(now.getTime() + 330*60000);
+    DS.dd = ist.getUTCDate(); DS.mm = ist.getUTCMonth()+1; DS.yr = ist.getUTCFullYear();
+    DS.hh = ist.getUTCHours(); DS.mn = ist.getUTCMinutes();
+  }
+
   renderAllDrums();
-  // Attach drum touch/wheel listeners AFTER DOM is ready
   initAllDrumListeners();
+
   // Tabs 0 & 1: current time chart
   refreshNow();
-  // Tabs 2 & 3: current time chart (default)
+
+  // Tab 3: render from restored (or current) drum state
   drumCalc();
+
   refreshSavedDropdown();
   restoreLastSavedChart();
   showTab(0);
